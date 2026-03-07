@@ -124,3 +124,28 @@ class TestIsCacheValid:
   def test_invalid_when_missing_usage_data_key(self):
     cache_entry = {"fetched_at": datetime.now(timezone.utc).isoformat()}
     assert is_cache_valid(cache_entry) is False
+
+  def test_invalid_when_ttl_expired(self, sample_usage_data):
+    """Cache older than TTL should be invalid even if resets are in future."""
+    old_time = (datetime.now(timezone.utc) - timedelta(seconds=90)).isoformat()
+    cache_entry = {
+      "usage_data": sample_usage_data,
+      "fetched_at": old_time,
+    }
+    assert is_cache_valid(cache_entry) is False
+
+  def test_valid_when_within_ttl(self, sample_usage_data):
+    """Cache within TTL and resets in future should be valid."""
+    recent_time = (datetime.now(timezone.utc) - timedelta(seconds=30)).isoformat()
+    cache_entry = {
+      "usage_data": sample_usage_data,
+      "fetched_at": recent_time,
+    }
+    assert is_cache_valid(cache_entry) is True
+
+  def test_invalid_when_missing_fetched_at(self, sample_usage_data):
+    """Cache without fetched_at should be invalid."""
+    cache_entry = {
+      "usage_data": sample_usage_data,
+    }
+    assert is_cache_valid(cache_entry) is False

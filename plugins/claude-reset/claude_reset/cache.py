@@ -1,10 +1,11 @@
 import json
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from claude_reset.utils import iso_to_datetime
 
 
 RESET_BUCKETS = ["five_hour", "seven_day", "seven_day_opus", "seven_day_sonnet"]
+CACHE_TTL_SECONDS = 60
 
 
 def write_cache(cache_path, usage_data):
@@ -32,7 +33,7 @@ def read_cache(cache_path):
 
 
 def is_cache_valid(cache_entry):
-  """Check if cache is still valid (no reset times have passed)."""
+  """Check if cache is still valid (within TTL and no reset times have passed)."""
   if cache_entry is None:
     return False
 
@@ -40,8 +41,18 @@ def is_cache_valid(cache_entry):
   if usage_data is None:
     return False
 
+  fetched_at_str = cache_entry.get("fetched_at")
+  if fetched_at_str is None:
+    return False
+
   now = datetime.now(timezone.utc)
 
+  # TTL check — invalidate if older than CACHE_TTL_SECONDS
+  fetched_at = iso_to_datetime(fetched_at_str)
+  if (now - fetched_at) > timedelta(seconds=CACHE_TTL_SECONDS):
+    return False
+
+  # Reset window check — invalidate if any bucket has reset
   for bucket_key in RESET_BUCKETS:
     bucket = usage_data.get(bucket_key)
     if bucket is None:
