@@ -22,10 +22,12 @@ import argparse
 from claude_reset.api import read_oauth_token, fetch_usage_data, refresh_oauth_token
 from claude_reset.cache import read_cache, write_cache, is_cache_valid
 from claude_reset.renderer import render_compact_line, render_detail_lines
+from claude_reset.stdin_context import parse_stdin_context, persist_context, load_persisted_context
 
 
 CREDENTIALS_PATH = os.path.expanduser("~/.claude/.credentials.json")
 CACHE_PATH = os.path.expanduser("~/.claude/claude-reset-cache.json")
+STDIN_CTX_PATH = os.path.expanduser("~/.claude/claude-reset-stdin-ctx.json")
 
 
 def get_usage_data():
@@ -62,6 +64,27 @@ def get_usage_data():
     return None
 
 
+def get_context_data():
+  """Read context data from stdin and merge with persisted data."""
+  raw_stdin = ""
+  if not sys.stdin.isatty():
+    try:
+      raw_stdin = sys.stdin.read(65536)
+    except Exception:
+      pass
+
+  stdin_ctx = parse_stdin_context(raw_stdin)
+
+  if stdin_ctx:
+    persist_context(stdin_ctx, STDIN_CTX_PATH)
+
+  persisted = load_persisted_context(STDIN_CTX_PATH)
+  if stdin_ctx:
+    persisted.update(stdin_ctx)
+
+  return persisted if persisted else None
+
+
 def main():
   parser = argparse.ArgumentParser(description="Claude Code rate limit status")
   group = parser.add_mutually_exclusive_group()
@@ -69,15 +92,17 @@ def main():
   group.add_argument("--detail", action="store_true", help="Multi-line detailed view")
   args = parser.parse_args()
 
+  context_data = get_context_data()
   usage_data = get_usage_data()
+
   if usage_data is None:
     print("\033[2mNo usage data\033[0m")
     return
 
   if args.compact:
-    print(render_compact_line(usage_data))
+    print(render_compact_line(usage_data, context_data=context_data))
   else:
-    for line in render_detail_lines(usage_data):
+    for line in render_detail_lines(usage_data, context_data=context_data):
       print(line)
 
 

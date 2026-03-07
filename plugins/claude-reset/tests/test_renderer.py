@@ -163,3 +163,54 @@ class TestRenderDetailLines:
     }
     lines = render_detail_lines(usage_data)
     assert len(lines) == 3  # session + weekly + overage, no opus/sonnet
+
+
+class TestRenderWithContext:
+  """Test context window rendering in both compact and detail views."""
+
+  def _make_usage_data(self):
+    return {
+      "five_hour": {"utilization": 42, "resets_at": "2026-03-07T16:00:00Z"},
+      "seven_day": {"utilization": 35, "resets_at": "2026-03-10T18:00:00Z"},
+    }
+
+  def test_compact_includes_context_bar(self):
+    context = {"context_pct": 55.0, "context_used": 110000, "context_limit": 200000}
+    line = render_compact_line(self._make_usage_data(), context_data=context)
+    assert "55%" in line
+    assert FILLED_CHAR in line
+
+  def test_compact_no_context_when_none(self):
+    line_without = render_compact_line(self._make_usage_data())
+    line_with_none = render_compact_line(self._make_usage_data(), context_data=None)
+    assert line_without == line_with_none
+
+  def test_compact_no_context_when_empty(self):
+    line = render_compact_line(self._make_usage_data(), context_data={})
+    assert "Context" not in line
+
+  def test_detail_includes_context_line_first(self):
+    context = {"context_pct": 42.5, "context_used": 85000, "context_limit": 200000}
+    lines = render_detail_lines(self._make_usage_data(), context_data=context)
+    assert "Context" in lines[0]
+    assert "42%" in lines[0]
+    assert "85k/200k" in lines[0]
+
+  def test_detail_no_context_when_none(self):
+    lines = render_detail_lines(self._make_usage_data())
+    context_lines = [l for l in lines if "Context" in l]
+    assert len(context_lines) == 0
+
+  def test_detail_context_percent_only(self):
+    """When token counts are missing, show only percentage."""
+    context = {"context_pct": 70.0}
+    lines = render_detail_lines(self._make_usage_data(), context_data=context)
+    context_lines = [l for l in lines if "Context" in l]
+    assert len(context_lines) == 1
+    assert "70%" in context_lines[0]
+
+  def test_detail_context_line_has_progress_bar(self):
+    context = {"context_pct": 30.0}
+    lines = render_detail_lines(self._make_usage_data(), context_data=context)
+    context_lines = [l for l in lines if "Context" in l]
+    assert FILLED_CHAR in context_lines[0] or EMPTY_CHAR in context_lines[0]

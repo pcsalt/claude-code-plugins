@@ -45,9 +45,25 @@ def _format_countdown_and_time(resets_at_str):
   return f"{countdown} ({local_time})"
 
 
-def render_compact_line(usage_data):
+def _fmt_tokens(n):
+  """Format token count: 200000 -> '200k', 1000000 -> '1M'."""
+  if n >= 1000000:
+    return f"{n / 1000000:.0f}M"
+  if n >= 1000:
+    return f"{n / 1000:.0f}k"
+  return str(n)
+
+
+def render_compact_line(usage_data, context_data=None):
   """Render single-line compact view (Option E)."""
   parts = []
+
+  # Context window
+  if context_data and context_data.get("context_pct") is not None:
+    ctx_pct = context_data["context_pct"]
+    color = get_color_for_utilization(ctx_pct)
+    bar = build_progress_bar(ctx_pct)
+    parts.append(f"\U0001f4d0 {bar} {color}{ctx_pct:.0f}%{ANSI_RESET}")
 
   # Session
   bucket = usage_data.get("five_hour")
@@ -56,7 +72,7 @@ def render_compact_line(usage_data):
     color = get_color_for_utilization(util)
     bar = build_progress_bar(util)
     countdown_str = _format_countdown_and_time(bucket["resets_at"])
-    parts.append(f"\u23f1 {bar} {color}{util:.0f}%{ANSI_RESET} {countdown_str}")
+    parts.append(f"\u26a1 {bar} {color}{util:.0f}%{ANSI_RESET} {countdown_str}")
 
   # Weekly
   bucket = usage_data.get("seven_day")
@@ -96,9 +112,24 @@ def render_compact_line(usage_data):
   return f" {ANSI_DIM}\u2502{ANSI_RESET} ".join(parts)
 
 
-def render_detail_lines(usage_data):
+def render_detail_lines(usage_data, context_data=None):
   """Render multi-line detailed view (Option F)."""
   lines = []
+
+  # Context window
+  if context_data and context_data.get("context_pct") is not None:
+    ctx_pct = context_data["context_pct"]
+    color = get_color_for_utilization(ctx_pct)
+    bar = build_progress_bar(ctx_pct)
+    ctx_used = context_data.get("context_used")
+    ctx_limit = context_data.get("context_limit")
+    if ctx_used is not None and ctx_limit is not None:
+      token_label = f"  {_fmt_tokens(ctx_used)}/{_fmt_tokens(ctx_limit)}"
+    else:
+      token_label = ""
+    lines.append(
+      f"\U0001f4d0 Context  [{bar}]  {color}{ctx_pct:.0f}%{ANSI_RESET}{token_label}"
+    )
 
   # Session
   bucket = usage_data.get("five_hour")
@@ -108,7 +139,7 @@ def render_detail_lines(usage_data):
     bar = build_progress_bar(util)
     countdown_str = _format_countdown_and_time(bucket["resets_at"])
     lines.append(
-      f"\u23f1 Session  [{bar}]  {color}{util:.0f}%{ANSI_RESET}  \u21bb {countdown_str}"
+      f"\u26a1 Session  [{bar}]  {color}{util:.0f}%{ANSI_RESET}  \u21bb {countdown_str}"
     )
 
   # Weekly
