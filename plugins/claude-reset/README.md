@@ -4,6 +4,7 @@ A lightweight Claude Code status line plugin that displays rate limit usage and 
 
 ## What it shows
 
+- **Context window** — current conversation's context usage with token counts (no API call — read from Claude Code's stdin)
 - **Session (5h)** — utilization bar + countdown + local reset time
 - **Weekly (7d)** — all models combined
 - **Opus / Sonnet** — model-specific weekly limits (shown only when available)
@@ -14,7 +15,8 @@ A lightweight Claude Code status line plugin that displays rate limit usage and 
 ### Detail view (multi-line)
 
 ```
-⏱ Session  [▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱]  42%  ↻ 2h 15m (14:30)
+📐 Context  [▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱]  42%  85k/200k
+⚡ Session  [▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱]  42%  ↻ 2h 15m (14:30)
 📅 Weekly   [▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱]  35%  ↻ 3d 4h (Wed 18:00)
 🔮 Opus     [▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱]  28%  ↻ 3d 4h (Wed 18:00)
 ✨ Sonnet   [▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱]  12%  ↻ 3d 4h (Wed 18:00)
@@ -24,7 +26,7 @@ A lightweight Claude Code status line plugin that displays rate limit usage and 
 ### Compact view (single line)
 
 ```
-⏱ ▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱ 42% 2h15m │ 📅 ▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱ 35% 3d4h │ 🔮 ▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱ 28% │ ✨ ▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱ 12% │ 💰 $15/$50
+📐 ▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱ 42% │ ⚡ ▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱ 42% 2h15m │ 📅 ▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱ 35% 3d4h │ 🔮 ▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱ 28% │ ✨ ▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱ 12% │ 💰 $15/$50
 ```
 
 ### Color coding
@@ -73,6 +75,12 @@ The status line will appear after the next assistant message.
 
 ## How it works
 
+**Context window** (no API call):
+1. Claude Code pipes session JSON to the status line command via stdin
+2. Parses `context_window.used_percentage` and token counts from stdin
+3. Persists context data to `~/.claude/claude-reset-stdin-ctx.json` so it survives refreshes
+
+**Rate limits** (smart caching):
 1. Reads your OAuth token from `~/.claude/.credentials.json` or macOS Keychain
 2. Calls `https://api.anthropic.com/api/oauth/usage` to fetch rate limit data
 3. Caches the response locally at `~/.claude/claude-reset-cache.json`

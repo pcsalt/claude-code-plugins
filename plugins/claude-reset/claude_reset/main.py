@@ -23,11 +23,13 @@ from claude_reset.api import read_oauth_token, fetch_usage_data, refresh_oauth_t
 from claude_reset.cache import read_cache, write_cache, is_cache_valid
 from claude_reset.renderer import render_compact_line, render_detail_lines
 from claude_reset.stdin_context import parse_stdin_context, persist_context, load_persisted_context
+from claude_reset.clock import get_session_elapsed
 
 
 CREDENTIALS_PATH = os.path.expanduser("~/.claude/.credentials.json")
 CACHE_PATH = os.path.expanduser("~/.claude/claude-reset-cache.json")
 STDIN_CTX_PATH = os.path.expanduser("~/.claude/claude-reset-stdin-ctx.json")
+CLOCK_PATH = os.path.expanduser("~/.claude/claude-reset-session.json")
 
 
 def get_usage_data():
@@ -94,15 +96,16 @@ def main():
 
   context_data = get_context_data()
   usage_data = get_usage_data()
+  elapsed = get_session_elapsed(CLOCK_PATH)
 
   if usage_data is None:
     print("\033[2mNo usage data\033[0m")
     return
 
   if args.compact:
-    print(render_compact_line(usage_data, context_data=context_data))
+    print(render_compact_line(usage_data, context_data=context_data, elapsed=elapsed))
   else:
-    for line in render_detail_lines(usage_data, context_data=context_data):
+    for line in render_detail_lines(usage_data, context_data=context_data, elapsed=elapsed):
       print(line)
 
 

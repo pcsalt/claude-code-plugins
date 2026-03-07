@@ -214,3 +214,34 @@ class TestRenderWithContext:
     lines = render_detail_lines(self._make_usage_data(), context_data=context)
     context_lines = [l for l in lines if "Context" in l]
     assert FILLED_CHAR in context_lines[0] or EMPTY_CHAR in context_lines[0]
+
+
+class TestRenderWithClock:
+  """Test session clock rendering in both compact and detail views."""
+
+  def _make_usage_data(self):
+    return {
+      "five_hour": {"utilization": 42, "resets_at": "2026-03-07T16:00:00Z"},
+      "seven_day": {"utilization": 35, "resets_at": "2026-03-10T18:00:00Z"},
+    }
+
+  def test_compact_includes_elapsed(self):
+    from datetime import timedelta
+    line = render_compact_line(self._make_usage_data(), elapsed=timedelta(minutes=23))
+    assert "23m" in line
+
+  def test_compact_no_clock_when_none(self):
+    line = render_compact_line(self._make_usage_data(), elapsed=None)
+    assert "Elapsed" not in line
+
+  def test_detail_includes_elapsed_line(self):
+    from datetime import timedelta
+    lines = render_detail_lines(self._make_usage_data(), elapsed=timedelta(hours=1, minutes=15))
+    elapsed_lines = [l for l in lines if "Elapsed" in l]
+    assert len(elapsed_lines) == 1
+    assert "1h 15m" in elapsed_lines[0]
+
+  def test_detail_elapsed_is_last_line(self):
+    from datetime import timedelta
+    lines = render_detail_lines(self._make_usage_data(), elapsed=timedelta(minutes=5))
+    assert "Elapsed" in lines[-1]
