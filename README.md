@@ -6,7 +6,8 @@ A marketplace of plugins for Claude Code — status line widgets, tools, and uti
 
 | Plugin | Description | Dependencies |
 |--------|-------------|--------------|
-| [claude-reset](plugins/claude-reset/) | Rate limit usage bars and countdown timers in your status line | Python 3 (stdlib only) |
+| [claude-reset](plugins/claude-reset/) | Rate limit usage bars, context window, git status, and session clock in your status line | Python 3 (stdlib only) |
+| [claude-log](plugins/claude-log/) | Hook-based session activity logger — logs tool usage to `.claude/session-log.md` | Python 3 (stdlib only) |
 
 ## Quick Install
 

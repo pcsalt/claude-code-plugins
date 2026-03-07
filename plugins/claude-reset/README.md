@@ -1,6 +1,6 @@
 # claude-reset
 
-A lightweight Claude Code status line plugin that displays rate limit usage and reset countdowns.
+A lightweight Claude Code status line plugin that displays rate limits, context window, git status, and session clock.
 
 ## What it shows
 
@@ -9,6 +9,8 @@ A lightweight Claude Code status line plugin that displays rate limit usage and 
 - **Weekly (7d)** — all models combined
 - **Opus / Sonnet** — model-specific weekly limits (shown only when available)
 - **Overage** — monthly spend vs budget
+- **Elapsed** — how long the current session has been active (auto-resets after 24h)
+- **Git** — current branch, modified file count, ahead/behind remote
 
 ## Views
 
@@ -21,12 +23,14 @@ A lightweight Claude Code status line plugin that displays rate limit usage and 
 🔮 Opus     [▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱]  28%  ↻ 3d 4h (Wed 18:00)
 ✨ Sonnet   [▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱]  12%  ↻ 3d 4h (Wed 18:00)
 💰 Overage  [▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱]  $15.82 / $50.00
+🕑 Elapsed  1h 23m
+🔀 Git      feat/context  2↑ 3✎
 ```
 
 ### Compact view (single line)
 
 ```
-📐 ▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱ 42% │ ⚡ ▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱ 42% 2h15m │ 📅 ▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱ 35% 3d4h │ 🔮 ▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱ 28% │ ✨ ▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱ 12% │ 💰 $15/$50
+📐 ▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱ 42% │ ⚡ ▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱ 42% 2h15m │ 📅 ... │ 🕑 1h23m │ 🔀 feat/context 2↑ 3✎
 ```
 
 ### Color coding
@@ -86,6 +90,15 @@ The status line will appear after the next assistant message.
 3. Caches the response locally at `~/.claude/claude-reset-cache.json`
 4. On subsequent runs, serves from cache if no reset window has expired
 5. Only makes a new API call when a `resets_at` timestamp is in the past
+
+**Session clock** (no API call):
+1. Records session start time to `~/.claude/claude-reset-session.json`
+2. Shows elapsed time on each refresh
+3. Auto-resets after 24h of inactivity
+
+**Git status** (no API call):
+1. Runs local `git` commands to get branch, modified files, ahead/behind
+2. Displays branch name with change indicators
 
 **Zero polling. Zero unnecessary API calls.**
 
