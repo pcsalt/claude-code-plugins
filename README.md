@@ -8,7 +8,53 @@ A marketplace of plugins for Claude Code — status line widgets, tools, and uti
 |--------|-------------|--------------|
 | [claude-reset](plugins/claude-reset/) | Rate limit usage bars and countdown timers in your status line | Python 3 (stdlib only) |
 
-## Installation
+## Quick Install
+
+One command to clone, configure, and activate:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/pcsalt/claude-code-plugins/main/install.sh | bash
+```
+
+**Detail view** (multi-line, default):
+```bash
+curl -sSL https://raw.githubusercontent.com/pcsalt/claude-code-plugins/main/install.sh | bash -s -- --detail
+```
+
+**Compact view** (single line):
+```bash
+curl -sSL https://raw.githubusercontent.com/pcsalt/claude-code-plugins/main/install.sh | bash -s -- --compact
+```
+
+## Update
+
+Pull the latest changes:
+
+```bash
+~/.claude-code-plugins/update.sh
+```
+
+Or via curl:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/pcsalt/claude-code-plugins/main/update.sh | bash
+```
+
+## Uninstall
+
+Remove the plugin, cache, and status line config:
+
+```bash
+~/.claude-code-plugins/uninstall.sh
+```
+
+Or via curl:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/pcsalt/claude-code-plugins/main/uninstall.sh | bash
+```
+
+## Manual Installation
 
 ### 1. Clone the repo
 
@@ -22,7 +68,7 @@ Browse the [plugins/](plugins/) directory and follow the plugin's own README for
 
 ### 3. Configure Claude Code
 
-Each plugin provides a `statusLine` config snippet. Add it to your `~/.claude/settings.json`:
+Add to `~/.claude/settings.json`:
 
 ```json
 {
@@ -33,11 +79,9 @@ Each plugin provides a `statusLine` config snippet. Add it to your `~/.claude/se
 }
 ```
 
-### 4. Stay updated
+### 4. Restart Claude Code
 
-```bash
-cd ~/.claude-code-plugins && git pull
-```
+The status line appears after the next assistant message.
 
 ## Contributing
 
