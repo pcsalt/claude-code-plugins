@@ -9,7 +9,7 @@ A lightweight Claude Code status line plugin that displays rate limits, context 
 - **Weekly (7d)** — all models combined
 - **Opus / Sonnet** — model-specific weekly limits (shown only when available)
 - **Overage** — monthly spend vs budget
-- **Elapsed** — how long the current session has been active (auto-resets after 24h)
+- **Elapsed** — how long the current coding session has been active (see [Session clock](#session-clock) below)
 - **Git** — current branch, modified file count, ahead/behind remote
 
 ## Views
@@ -91,14 +91,24 @@ The status line will appear after the next assistant message.
 4. On subsequent runs, serves from cache if no reset window has expired
 5. Only makes a new API call when a `resets_at` timestamp is in the past
 
-**Session clock** (no API call):
-1. Records session start time to `~/.claude/claude-reset-session.json`
-2. Shows elapsed time on each refresh
-3. Auto-resets after 24h of inactivity
+### Session clock
 
-**Git status** (no API call):
-1. Runs local `git` commands to get branch, modified files, ahead/behind
-2. Displays branch name with change indicators
+The elapsed timer tracks how long you've been working in Claude Code. No API call — purely local.
+
+- The **first time** the status line runs in a session, it records the current time to `~/.claude/claude-reset-session.json`
+- On **every subsequent refresh**, it calculates the difference and displays it (e.g., `23m`, `1h 15m`, `3h 45m`)
+- If the last recorded start time is **older than 24 hours**, the clock treats it as a stale session and **automatically resets** — it writes a new start time and the timer restarts from `< 1m`
+- The clock **persists across conversation restarts** within the same day. If you close Claude Code and reopen it a few hours later, the timer continues from where it was (since the start time is on disk)
+- To **manually reset** the clock, delete the file: `rm ~/.claude/claude-reset-session.json`
+
+### Git status
+
+No API call — runs local `git` commands only.
+
+1. `git rev-parse --abbrev-ref HEAD` — current branch name
+2. `git status --porcelain` — count of modified/untracked files (shown as `3✎`)
+3. `git rev-list --count --left-right @{u}...HEAD` — commits ahead/behind remote (shown as `2↑ 1↓`)
+4. If not inside a git repo, the git line is hidden
 
 **Zero polling. Zero unnecessary API calls.**
 
