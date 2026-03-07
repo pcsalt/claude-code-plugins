@@ -24,6 +24,7 @@ from claude_reset.cache import read_cache, write_cache, is_cache_valid
 from claude_reset.renderer import render_compact_line, render_detail_lines
 from claude_reset.stdin_context import parse_stdin_context, persist_context, load_persisted_context
 from claude_reset.clock import get_session_elapsed
+from claude_reset.git_info import get_git_info
 
 
 CREDENTIALS_PATH = os.path.expanduser("~/.claude/.credentials.json")
@@ -97,15 +98,16 @@ def main():
   context_data = get_context_data()
   usage_data = get_usage_data()
   elapsed = get_session_elapsed(CLOCK_PATH)
+  git = get_git_info()
 
   if usage_data is None:
     print("\033[2mNo usage data\033[0m")
     return
 
   if args.compact:
-    print(render_compact_line(usage_data, context_data=context_data, elapsed=elapsed))
+    print(render_compact_line(usage_data, context_data=context_data, elapsed=elapsed, git_info=git))
   else:
-    for line in render_detail_lines(usage_data, context_data=context_data, elapsed=elapsed):
+    for line in render_detail_lines(usage_data, context_data=context_data, elapsed=elapsed, git_info=git):
       print(line)
 
 

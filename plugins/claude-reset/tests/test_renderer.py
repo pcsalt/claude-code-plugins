@@ -245,3 +245,34 @@ class TestRenderWithClock:
     from datetime import timedelta
     lines = render_detail_lines(self._make_usage_data(), elapsed=timedelta(minutes=5))
     assert "Elapsed" in lines[-1]
+
+
+class TestRenderWithGit:
+  """Test git info rendering in both compact and detail views."""
+
+  def _make_usage_data(self):
+    return {
+      "five_hour": {"utilization": 42, "resets_at": "2026-03-07T16:00:00Z"},
+      "seven_day": {"utilization": 35, "resets_at": "2026-03-10T18:00:00Z"},
+    }
+
+  def test_compact_includes_branch(self):
+    git = {"branch": "feat/x", "changes": 2, "ahead": 1, "behind": 0}
+    line = render_compact_line(self._make_usage_data(), git_info=git)
+    assert "feat/x" in line
+
+  def test_compact_no_git_when_none(self):
+    line = render_compact_line(self._make_usage_data(), git_info=None)
+    assert "Git" not in line
+
+  def test_detail_includes_git_line(self):
+    git = {"branch": "main", "changes": 3, "ahead": 0, "behind": 0}
+    lines = render_detail_lines(self._make_usage_data(), git_info=git)
+    git_lines = [l for l in lines if "Git" in l]
+    assert len(git_lines) == 1
+    assert "main" in git_lines[0]
+
+  def test_detail_git_is_last_line(self):
+    git = {"branch": "main", "changes": 0, "ahead": 0, "behind": 0}
+    lines = render_detail_lines(self._make_usage_data(), git_info=git)
+    assert "Git" in lines[-1]
