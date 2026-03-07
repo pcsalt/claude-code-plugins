@@ -21,7 +21,21 @@ A hook-based session activity logger for Claude Code. Logs every tool usage to a
 - `10:32:10` | **Write** | `/src/utils.py`
 ```
 
-## Installation
+## Quick Install
+
+Requires the main repo to be cloned first (via `install.sh` or manually):
+
+```bash
+~/.claude-code-plugins/plugins/claude-log/install.sh
+```
+
+## Uninstall
+
+```bash
+~/.claude-code-plugins/plugins/claude-log/uninstall.sh
+```
+
+## Manual Installation
 
 ### 1. Clone the marketplace repo (if not already done)
 
