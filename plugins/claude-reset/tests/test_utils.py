@@ -18,7 +18,7 @@ class TestFormatCountdown:
 
   def test_days_and_hours(self):
     delta = timedelta(days=3, hours=4, minutes=20)
-    assert format_countdown(delta) == "3d 4h"
+    assert format_countdown(delta) == "3d 04h"
 
   def test_less_than_one_minute(self):
     delta = timedelta(seconds=30)
@@ -34,16 +34,16 @@ class TestFormatCountdown:
 
   def test_exactly_one_hour(self):
     delta = timedelta(hours=1)
-    assert format_countdown(delta) == "1h 0m"
+    assert format_countdown(delta) == "1h 00m"
 
   def test_exactly_one_day(self):
     delta = timedelta(days=1)
-    assert format_countdown(delta) == "1d 0h"
+    assert format_countdown(delta) == "1d 00h"
 
   def test_days_hours_minutes_truncates_minutes(self):
     """When days > 0, minutes should be omitted for brevity."""
     delta = timedelta(days=2, hours=5, minutes=30)
-    assert format_countdown(delta) == "2d 5h"
+    assert format_countdown(delta) == "2d 05h"
 
 
 class TestFormatLocalTime:

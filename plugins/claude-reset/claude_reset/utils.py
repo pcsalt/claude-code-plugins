@@ -15,10 +15,10 @@ def format_countdown(delta):
   minutes = (total_seconds % 3600) // 60
 
   if days > 0:
-    return f"{days}d {hours}h"
+    return f"{days}d {hours:02d}h"
   if hours > 0:
-    return f"{hours}h {minutes}m"
-  return f"{minutes}m"
+    return f"{hours}h {minutes:02d}m"
+  return f"{minutes:02d}m"
 
 
 def format_local_time(dt):

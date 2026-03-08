@@ -63,7 +63,7 @@ def render_compact_line(usage_data, context_data=None, elapsed=None, git_info=No
     ctx_pct = context_data["context_pct"]
     color = get_color_for_utilization(ctx_pct)
     bar = build_progress_bar(ctx_pct)
-    parts.append(f"\U0001f4d0 {bar} {color}{ctx_pct:.0f}%{ANSI_RESET}")
+    parts.append(f"\U0001f4d0 {bar} {color}{ctx_pct:2.0f}%{ANSI_RESET}")
 
   # Session
   bucket = usage_data.get("five_hour")
@@ -72,7 +72,7 @@ def render_compact_line(usage_data, context_data=None, elapsed=None, git_info=No
     color = get_color_for_utilization(util)
     bar = build_progress_bar(util)
     countdown_str = _format_countdown_and_time(bucket["resets_at"])
-    parts.append(f"\u26a1 {bar} {color}{util:.0f}%{ANSI_RESET} {countdown_str}")
+    parts.append(f"\u26a1 {bar} {color}{util:2.0f}%{ANSI_RESET} {countdown_str}")
 
   # Weekly
   bucket = usage_data.get("seven_day")
@@ -81,7 +81,7 @@ def render_compact_line(usage_data, context_data=None, elapsed=None, git_info=No
     color = get_color_for_utilization(util)
     bar = build_progress_bar(util)
     countdown_str = _format_countdown_and_time(bucket["resets_at"])
-    parts.append(f"\U0001f4c5 {bar} {color}{util:.0f}%{ANSI_RESET} {countdown_str}")
+    parts.append(f"\U0001f4c5 {bar} {color}{util:2.0f}%{ANSI_RESET} {countdown_str}")
 
   # Opus
   bucket = usage_data.get("seven_day_opus")
@@ -89,7 +89,7 @@ def render_compact_line(usage_data, context_data=None, elapsed=None, git_info=No
     util = bucket["utilization"]
     color = get_color_for_utilization(util)
     bar = build_progress_bar(util)
-    parts.append(f"\U0001f52e {bar} {color}{util:.0f}%{ANSI_RESET}")
+    parts.append(f"\U0001f52e {bar} {color}{util:2.0f}%{ANSI_RESET}")
 
   # Sonnet
   bucket = usage_data.get("seven_day_sonnet")
@@ -97,7 +97,7 @@ def render_compact_line(usage_data, context_data=None, elapsed=None, git_info=No
     util = bucket["utilization"]
     color = get_color_for_utilization(util)
     bar = build_progress_bar(util)
-    parts.append(f"\u2728 {bar} {color}{util:.0f}%{ANSI_RESET}")
+    parts.append(f"\u2728 {bar} {color}{util:2.0f}%{ANSI_RESET}")
 
   # Overage
   extra = usage_data.get("extra_usage")
@@ -140,7 +140,7 @@ def render_detail_lines(usage_data, context_data=None, elapsed=None, git_info=No
     else:
       token_label = ""
     lines.append(
-      f"\U0001f4d0 Context  [{bar}]  {color}{ctx_pct:.0f}%{ANSI_RESET}{token_label}"
+      f"\U0001f4d0 Context  [{bar}]  {color}{ctx_pct:2.0f}%{ANSI_RESET}{token_label}"
     )
 
   # Session
@@ -151,7 +151,7 @@ def render_detail_lines(usage_data, context_data=None, elapsed=None, git_info=No
     bar = build_progress_bar(util)
     countdown_str = _format_countdown_and_time(bucket["resets_at"])
     lines.append(
-      f"\u26a1 Session  [{bar}]  {color}{util:.0f}%{ANSI_RESET}  \u21bb {countdown_str}"
+      f"\u26a1 Session  [{bar}]  {color}{util:2.0f}%{ANSI_RESET}  \u21bb {countdown_str}"
     )
 
   # Weekly
@@ -162,7 +162,7 @@ def render_detail_lines(usage_data, context_data=None, elapsed=None, git_info=No
     bar = build_progress_bar(util)
     countdown_str = _format_countdown_and_time(bucket["resets_at"])
     lines.append(
-      f"\U0001f4c5 Weekly   [{bar}]  {color}{util:.0f}%{ANSI_RESET}  \u21bb {countdown_str}"
+      f"\U0001f4c5 Weekly   [{bar}]  {color}{util:2.0f}%{ANSI_RESET}  \u21bb {countdown_str}"
     )
 
   # Opus
@@ -173,7 +173,7 @@ def render_detail_lines(usage_data, context_data=None, elapsed=None, git_info=No
     bar = build_progress_bar(util)
     countdown_str = _format_countdown_and_time(bucket["resets_at"])
     lines.append(
-      f"\U0001f52e Opus     [{bar}]  {color}{util:.0f}%{ANSI_RESET}  \u21bb {countdown_str}"
+      f"\U0001f52e Opus     [{bar}]  {color}{util:2.0f}%{ANSI_RESET}  \u21bb {countdown_str}"
     )
 
   # Sonnet
@@ -184,7 +184,7 @@ def render_detail_lines(usage_data, context_data=None, elapsed=None, git_info=No
     bar = build_progress_bar(util)
     countdown_str = _format_countdown_and_time(bucket["resets_at"])
     lines.append(
-      f"\u2728 Sonnet   [{bar}]  {color}{util:.0f}%{ANSI_RESET}  \u21bb {countdown_str}"
+      f"\u2728 Sonnet   [{bar}]  {color}{util:2.0f}%{ANSI_RESET}  \u21bb {countdown_str}"
     )
 
   # Overage
