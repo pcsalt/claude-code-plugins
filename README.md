@@ -1,5 +1,7 @@
 # Claude Code Plugins
 
+[![Tests](https://github.com/pcsalt/claude-code-plugins/actions/workflows/tests.yml/badge.svg)](https://github.com/pcsalt/claude-code-plugins/actions/workflows/tests.yml)
+
 A marketplace of plugins for Claude Code — status line widgets, tools, and utilities.
 
 ## Available Plugins
