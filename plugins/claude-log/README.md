@@ -52,8 +52,13 @@ Edit `~/.claude/settings.json` and add the `hooks` block:
   "hooks": {
     "PostToolUse": [
       {
-        "type": "command",
-        "command": "PYTHONPATH=~/.claude-code-plugins/plugins/claude-log python3 -m claude_log.hook"
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PYTHONPATH=~/.claude-code-plugins/plugins/claude-log python3 -m claude_log.hook"
+          }
+        ]
       }
     ]
   }

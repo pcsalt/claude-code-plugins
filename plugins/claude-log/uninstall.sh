@@ -18,8 +18,8 @@ if [ -f "$SETTINGS_FILE" ]; then
 import json, sys
 with open('$SETTINGS_FILE') as f:
     s = json.load(f)
-hooks = s.get('hooks', {}).get('PostToolUse', [])
-found = any('claude_log' in h.get('command', '') for h in hooks)
+entries = s.get('hooks', {}).get('PostToolUse', [])
+found = any('claude_log' in h.get('command', '') for entry in entries for h in entry.get('hooks', []))
 if not found:
     sys.exit(1)
 " 2>/dev/null; then
@@ -29,7 +29,7 @@ with open('$SETTINGS_FILE') as f:
     settings = json.load(f)
 hooks = settings.get('hooks', {})
 post_hooks = hooks.get('PostToolUse', [])
-post_hooks = [h for h in post_hooks if 'claude_log' not in h.get('command', '')]
+post_hooks = [entry for entry in post_hooks if not any('claude_log' in h.get('command', '') for h in entry.get('hooks', []))]
 if post_hooks:
     hooks['PostToolUse'] = post_hooks
 else:

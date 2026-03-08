@@ -45,8 +45,13 @@ if [ ! -f "$SETTINGS_FILE" ]; then
   "hooks": {
     "PostToolUse": [
       {
-        "type": "command",
-        "command": "$HOOK_CMD"
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOOK_CMD"
+          }
+        ]
       }
     ]
   }
@@ -59,10 +64,11 @@ else
 import json, sys
 with open('$SETTINGS_FILE') as f:
     s = json.load(f)
-hooks = s.get('hooks', {}).get('PostToolUse', [])
-for h in hooks:
-    if 'claude_log' in h.get('command', ''):
-        sys.exit(1)
+entries = s.get('hooks', {}).get('PostToolUse', [])
+for entry in entries:
+    for h in entry.get('hooks', []):
+        if 'claude_log' in h.get('command', ''):
+            sys.exit(1)
 " 2>/dev/null; then
     # No claude-log hook — add it
     python3 -c "
@@ -72,8 +78,13 @@ with open('$SETTINGS_FILE') as f:
 hooks = settings.setdefault('hooks', {})
 post_hooks = hooks.setdefault('PostToolUse', [])
 post_hooks.append({
-    'type': 'command',
-    'command': '$HOOK_CMD'
+    'matcher': '',
+    'hooks': [
+        {
+            'type': 'command',
+            'command': '$HOOK_CMD'
+        }
+    ]
 })
 with open('$SETTINGS_FILE', 'w') as f:
     json.dump(settings, f, indent=2)
