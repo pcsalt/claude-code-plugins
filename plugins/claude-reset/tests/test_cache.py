@@ -7,6 +7,7 @@ from claude_reset.cache import (
   read_cache,
   write_cache,
   is_cache_valid,
+  has_expired_buckets,
 )
 
 
@@ -149,3 +150,40 @@ class TestIsCacheValid:
       "usage_data": sample_usage_data,
     }
     assert is_cache_valid(cache_entry) is False
+
+
+class TestHasExpiredBuckets:
+  def test_no_expired_buckets(self):
+    future = (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat()
+    usage_data = {
+      "five_hour": {"utilization": 42, "resets_at": future},
+      "seven_day": {"utilization": 35, "resets_at": future},
+    }
+    assert has_expired_buckets(usage_data) is False
+
+  def test_one_expired_bucket(self):
+    past = (datetime.now(timezone.utc) - timedelta(minutes=5)).isoformat()
+    future = (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat()
+    usage_data = {
+      "five_hour": {"utilization": 42, "resets_at": past},
+      "seven_day": {"utilization": 35, "resets_at": future},
+    }
+    assert has_expired_buckets(usage_data) is True
+
+  def test_all_expired_buckets(self):
+    past = (datetime.now(timezone.utc) - timedelta(minutes=5)).isoformat()
+    usage_data = {
+      "five_hour": {"utilization": 42, "resets_at": past},
+      "seven_day": {"utilization": 35, "resets_at": past},
+    }
+    assert has_expired_buckets(usage_data) is True
+
+  def test_none_usage_data(self):
+    assert has_expired_buckets(None) is False
+
+  def test_missing_buckets(self):
+    future = (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat()
+    usage_data = {
+      "five_hour": {"utilization": 42, "resets_at": future},
+    }
+    assert has_expired_buckets(usage_data) is False

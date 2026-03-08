@@ -20,7 +20,7 @@ import sys
 import argparse
 
 from claude_reset.api import read_oauth_token, fetch_usage_data, refresh_oauth_token
-from claude_reset.cache import read_cache, write_cache, is_cache_valid
+from claude_reset.cache import read_cache, write_cache, is_cache_valid, has_expired_buckets
 from claude_reset.renderer import render_compact_line, render_detail_lines
 from claude_reset.stdin_context import parse_stdin_context, persist_context, load_persisted_context
 from claude_reset.clock import get_session_elapsed
@@ -33,6 +33,16 @@ STDIN_CTX_PATH = os.path.expanduser("~/.claude/claude-reset-stdin-ctx.json")
 CLOCK_PATH = os.path.expanduser("~/.claude/claude-reset-session.json")
 
 
+def _fallback_cache(cached):
+  """Return cached usage data only if no buckets have expired."""
+  if cached is None:
+    return None
+  usage_data = cached["usage_data"]
+  if has_expired_buckets(usage_data):
+    return None
+  return usage_data
+
+
 def get_usage_data():
   """Get usage data from cache or API. Returns usage dict or None on error."""
   cached = read_cache(CACHE_PATH)
@@ -42,9 +52,7 @@ def get_usage_data():
   try:
     token_info = read_oauth_token(CREDENTIALS_PATH)
   except (FileNotFoundError, KeyError):
-    if cached is not None:
-      return cached["usage_data"]
-    return None
+    return _fallback_cache(cached)
 
   access_token = token_info["access_token"]
 
@@ -53,18 +61,14 @@ def get_usage_data():
       refreshed = refresh_oauth_token(token_info["refresh_token"])
       access_token = refreshed["access_token"]
     except Exception:
-      if cached is not None:
-        return cached["usage_data"]
-      return None
+      return _fallback_cache(cached)
 
   try:
     usage_data = fetch_usage_data(access_token)
     write_cache(CACHE_PATH, usage_data)
     return usage_data
   except Exception:
-    if cached is not None:
-      return cached["usage_data"]
-    return None
+    return _fallback_cache(cached)
 
 
 def get_context_data():

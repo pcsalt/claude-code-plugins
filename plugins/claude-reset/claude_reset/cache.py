@@ -65,3 +65,23 @@ def is_cache_valid(cache_entry):
       return False
 
   return True
+
+
+def has_expired_buckets(usage_data):
+  """Check if any rate limit bucket has a resets_at in the past."""
+  if usage_data is None:
+    return False
+
+  now = datetime.now(timezone.utc)
+  for bucket_key in RESET_BUCKETS:
+    bucket = usage_data.get(bucket_key)
+    if bucket is None:
+      continue
+    resets_at = bucket.get("resets_at")
+    if resets_at is None:
+      continue
+    reset_dt = iso_to_datetime(resets_at)
+    if reset_dt <= now:
+      return True
+
+  return False
