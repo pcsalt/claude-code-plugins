@@ -99,15 +99,16 @@ def main():
   usage_data = get_usage_data()
   elapsed = get_session_elapsed(CLOCK_PATH)
   git = get_git_info()
+  cwd = os.getcwd()
 
   if usage_data is None:
     print("\033[2mNo usage data\033[0m")
     return
 
   if args.compact:
-    print(render_compact_line(usage_data, context_data=context_data, elapsed=elapsed, git_info=git))
+    print(render_compact_line(usage_data, context_data=context_data, elapsed=elapsed, git_info=git, cwd=cwd))
   else:
-    for line in render_detail_lines(usage_data, context_data=context_data, elapsed=elapsed, git_info=git):
+    for line in render_detail_lines(usage_data, context_data=context_data, elapsed=elapsed, git_info=git, cwd=cwd):
       print(line)
 
 

@@ -4,6 +4,7 @@ from claude_reset.git_info import (
   get_git_info,
   format_git_compact,
   format_git_detail,
+  shorten_path,
 )
 
 
@@ -95,6 +96,17 @@ class TestFormatGitCompact:
     result = format_git_compact(info)
     assert "1" in result
 
+  def test_with_cwd(self):
+    info = {"branch": "main", "changes": 0, "ahead": 0, "behind": 0}
+    result = format_git_compact(info, cwd="/Users/test/projects/app")
+    assert "main" in result
+    assert "\U0001f4c2" in result
+
+  def test_cwd_only_no_git(self):
+    result = format_git_compact(None, cwd="/Users/test/projects/app")
+    assert "app" in result
+    assert "\U0001f4c2" in result
+
   def test_none_returns_empty(self):
     assert format_git_compact(None) == ""
 
@@ -112,5 +124,46 @@ class TestFormatGitDetail:
     assert "2" in result
     assert "1" in result
 
+  def test_with_cwd(self):
+    info = {"branch": "dev", "changes": 1, "ahead": 0, "behind": 0}
+    result = format_git_detail(info, cwd="/Users/test/projects/app")
+    assert "app" in result
+    assert "dev" in result
+    assert "\U0001f4c2" in result
+
+  def test_cwd_only_no_git(self):
+    result = format_git_detail(None, cwd="/Users/test/projects/app")
+    assert "app" in result
+    assert "\U0001f4c2" in result
+
   def test_none_returns_empty(self):
     assert format_git_detail(None) == ""
+
+
+class TestShortenPath:
+  def test_short_path_unchanged(self):
+    result = shorten_path("~/projects/app")
+    assert result == "~/projects/app"
+
+  @patch("claude_reset.git_info.os.path.expanduser", return_value="/Users/test")
+  def test_replaces_home_with_tilde(self, _):
+    result = shorten_path("/Users/test/projects/app")
+    assert result == "~/projects/app"
+
+  @patch("claude_reset.git_info.os.path.expanduser", return_value="/Users/test")
+  def test_shortens_intermediate_segments(self, _):
+    result = shorten_path("/Users/test/Documents/projects/claude-code-plugins/plugins/claude-reset/my-service")
+    assert result == "~/Doc/pro/cla/plu/cla/my-service"
+
+  @patch("claude_reset.git_info.os.path.expanduser", return_value="/Users/test")
+  def test_keeps_last_segment_full(self, _):
+    result = shorten_path("/Users/test/Documents/projects/claude-code-plugins/plugins/claude-reset/very-long-project-name")
+    assert result.endswith("very-long-project-name")
+
+  def test_already_tilde_path(self):
+    result = shorten_path("~/Documents/projects/claude-code-plugins/plugins/claude-reset/my-app")
+    assert result == "~/Doc/pro/cla/plu/cla/my-app"
+
+  def test_two_segments_unchanged(self):
+    result = shorten_path("~/app")
+    assert result == "~/app"

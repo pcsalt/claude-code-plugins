@@ -263,16 +263,16 @@ class TestRenderWithGit:
 
   def test_compact_no_git_when_none(self):
     line = render_compact_line(self._make_usage_data(), git_info=None)
-    assert "Git" not in line
+    assert "\U0001f4c2" not in line
 
   def test_detail_includes_git_line(self):
     git = {"branch": "main", "changes": 3, "ahead": 0, "behind": 0}
     lines = render_detail_lines(self._make_usage_data(), git_info=git)
-    git_lines = [l for l in lines if "Git" in l]
+    git_lines = [l for l in lines if "\U0001f4c2" in l]
     assert len(git_lines) == 1
     assert "main" in git_lines[0]
 
   def test_detail_git_is_last_line(self):
     git = {"branch": "main", "changes": 0, "ahead": 0, "behind": 0}
     lines = render_detail_lines(self._make_usage_data(), git_info=git)
-    assert "Git" in lines[-1]
+    assert "\U0001f4c2" in lines[-1]

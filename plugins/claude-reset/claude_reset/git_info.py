@@ -1,5 +1,6 @@
-"""Git info — shows branch, changes, and ahead/behind in status line."""
+"""Git info — shows branch, changes, CWD, and ahead/behind in status line."""
 
+import os
 import subprocess
 
 ANSI_DIM = "\033[2m"
@@ -49,12 +50,37 @@ def get_git_info():
   }
 
 
-def format_git_compact(info):
-  """Format git info for compact view."""
-  if info is None:
-    return ""
+MAX_PATH_LEN = 65
 
-  parts = [f"\U0001f500 {info['branch']}"]
+
+def shorten_path(path):
+  """Shorten a path by replacing home with ~ and truncating intermediate segments.
+
+  Intermediate segments are shortened to 3 chars, last segment kept full.
+  If the result with ~ substitution fits within MAX_PATH_LEN, returns as-is.
+  """
+  home = os.path.expanduser("~")
+  if path.startswith(home):
+    path = "~" + path[len(home):]
+
+  if len(path) <= MAX_PATH_LEN:
+    return path
+
+  parts = path.split(os.sep)
+  if len(parts) <= 2:
+    return path
+
+  # Shorten all intermediate segments (keep first and last)
+  shortened = [parts[0]]
+  for segment in parts[1:-1]:
+    shortened.append(segment[:3])
+  shortened.append(parts[-1])
+
+  return os.sep.join(shortened)
+
+
+def _format_git_indicators(info):
+  """Build git status indicators (ahead/behind/changes)."""
   indicators = []
   if info["ahead"] > 0:
     indicators.append(f"{info['ahead']}\u2191")
@@ -62,26 +88,40 @@ def format_git_compact(info):
     indicators.append(f"{info['behind']}\u2193")
   if info["changes"] > 0:
     indicators.append(f"{info['changes']}\u270e")
-  if indicators:
-    parts.append(" ".join(indicators))
+  return " ".join(indicators)
+
+
+def format_git_compact(info, cwd=None):
+  """Format CWD + git info for compact view."""
+  parts = []
+
+  if cwd:
+    parts.append(f"\U0001f4c2 {shorten_path(cwd)}")
+
+  if info is not None:
+    parts.append(info["branch"])
+    indicators = _format_git_indicators(info)
+    if indicators:
+      parts.append(indicators)
+  elif not cwd:
+    return ""
 
   return " ".join(parts)
 
 
-def format_git_detail(info):
-  """Format git info for detail view."""
-  if info is None:
+def format_git_detail(info, cwd=None):
+  """Format CWD + git info for detail view."""
+  parts = []
+
+  if cwd:
+    parts.append(shorten_path(cwd))
+
+  if info is not None:
+    parts.append(info["branch"])
+    indicators = _format_git_indicators(info)
+    if indicators:
+      parts.append(indicators)
+  elif not cwd:
     return ""
 
-  label = f"\U0001f500 Git      {info['branch']}"
-  indicators = []
-  if info["ahead"] > 0:
-    indicators.append(f"{info['ahead']}\u2191")
-  if info["behind"] > 0:
-    indicators.append(f"{info['behind']}\u2193")
-  if info["changes"] > 0:
-    indicators.append(f"{info['changes']}\u270e")
-  if indicators:
-    label += f"  {' '.join(indicators)}"
-
-  return label
+  return f"\U0001f4c2 {'  '.join(parts)}"
