@@ -29,7 +29,8 @@ class TestParseStdinContext:
       }
     })
     result = parse_stdin_context(raw)
-    assert result["context_pct"] == 42.5
+    # context_pct is recalculated from tokens: (90000/200000)*100 = 45.0
+    assert result["context_pct"] == 45.0
     assert result["context_used"] == 90000
     assert result["context_limit"] == 200000
     assert result["model_name"] == "Opus 4.6"
@@ -149,6 +150,25 @@ class TestPersistContext:
       with open(path, "w") as f:
         f.write("not valid json")
       assert load_persisted_context(path) == {}
+
+  def test_recalculates_context_pct_from_tokens(self):
+    """When tokens are available, context_pct should be derived from them,
+    not from the raw used_percentage, to avoid stale values on new sessions."""
+    raw = json.dumps({
+      "data": {
+        "context_window": {
+          "used_percentage": 60.0,
+          "total_input_tokens": 1000,
+          "total_output_tokens": 500,
+          "context_window_size": 200000,
+        },
+      }
+    })
+    result = parse_stdin_context(raw)
+    # Should be recalculated: (1500/200000)*100 = 0.75, not 60.0
+    assert result["context_pct"] == pytest.approx(0.75)
+    assert result["context_used"] == 1500
+    assert result["context_limit"] == 200000
 
   def test_only_persists_known_keys(self):
     """Unknown keys should not be persisted."""

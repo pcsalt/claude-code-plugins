@@ -59,6 +59,10 @@ def parse_stdin_context(raw_stdin):
   except (AttributeError, KeyError, ValueError, TypeError):
     pass
 
+  # Recalculate context_pct from tokens to avoid stale persisted values
+  if "context_used" in result and "context_limit" in result and result["context_limit"] > 0:
+    result["context_pct"] = (result["context_used"] / result["context_limit"]) * 100
+
   return result
 
 
