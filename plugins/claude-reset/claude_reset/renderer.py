@@ -35,6 +35,13 @@ def build_progress_bar(utilization):
   )
 
 
+def _is_expired(resets_at_str):
+  """Check if a resets_at timestamp is in the past."""
+  reset_dt = iso_to_datetime(resets_at_str)
+  now = datetime.now(timezone.utc)
+  return reset_dt <= now
+
+
 def _format_countdown_and_time(resets_at_str):
   """Format countdown and local time from a resets_at ISO string."""
   reset_dt = iso_to_datetime(resets_at_str)
@@ -63,12 +70,14 @@ def render_compact_line(usage_data, context_data=None, elapsed=None, git_info=No
     ctx_pct = context_data["context_pct"]
     color = get_color_for_utilization(ctx_pct)
     bar = build_progress_bar(ctx_pct)
-    parts.append(f"\U0001f4d0 {bar} {color}{ctx_pct:2.0f}%{ANSI_RESET}")
+    out_tok = context_data.get("output_tokens")
+    out_label = f" {ANSI_DIM}\u2191{_fmt_tokens(out_tok)}{ANSI_RESET}" if out_tok else ""
+    parts.append(f"\U0001f4d0 {bar} {color}{ctx_pct:2.0f}%{ANSI_RESET}{out_label}")
 
   # Session
   bucket = usage_data.get("five_hour")
   if bucket:
-    util = bucket["utilization"]
+    util = 0 if _is_expired(bucket["resets_at"]) else bucket["utilization"]
     color = get_color_for_utilization(util)
     bar = build_progress_bar(util)
     countdown_str = _format_countdown_and_time(bucket["resets_at"])
@@ -77,7 +86,7 @@ def render_compact_line(usage_data, context_data=None, elapsed=None, git_info=No
   # Weekly
   bucket = usage_data.get("seven_day")
   if bucket:
-    util = bucket["utilization"]
+    util = 0 if _is_expired(bucket["resets_at"]) else bucket["utilization"]
     color = get_color_for_utilization(util)
     bar = build_progress_bar(util)
     countdown_str = _format_countdown_and_time(bucket["resets_at"])
@@ -86,7 +95,7 @@ def render_compact_line(usage_data, context_data=None, elapsed=None, git_info=No
   # Opus
   bucket = usage_data.get("seven_day_opus")
   if bucket:
-    util = bucket["utilization"]
+    util = 0 if _is_expired(bucket["resets_at"]) else bucket["utilization"]
     color = get_color_for_utilization(util)
     bar = build_progress_bar(util)
     parts.append(f"\U0001f52e {bar} {color}{util:2.0f}%{ANSI_RESET}")
@@ -94,7 +103,7 @@ def render_compact_line(usage_data, context_data=None, elapsed=None, git_info=No
   # Sonnet
   bucket = usage_data.get("seven_day_sonnet")
   if bucket:
-    util = bucket["utilization"]
+    util = 0 if _is_expired(bucket["resets_at"]) else bucket["utilization"]
     color = get_color_for_utilization(util)
     bar = build_progress_bar(util)
     parts.append(f"\u2728 {bar} {color}{util:2.0f}%{ANSI_RESET}")
@@ -142,11 +151,16 @@ def render_detail_lines(usage_data, context_data=None, elapsed=None, git_info=No
     lines.append(
       f"\U0001f4d0 Context  [{bar}]  {color}{ctx_pct:2.0f}%{ANSI_RESET}{token_label}"
     )
+    out_tok = context_data.get("output_tokens")
+    if out_tok:
+      lines.append(
+        f"\U0001f4e4 Output   {ANSI_DIM}{_fmt_tokens(out_tok)} tokens{ANSI_RESET}"
+      )
 
   # Session
   bucket = usage_data.get("five_hour")
   if bucket:
-    util = bucket["utilization"]
+    util = 0 if _is_expired(bucket["resets_at"]) else bucket["utilization"]
     color = get_color_for_utilization(util)
     bar = build_progress_bar(util)
     countdown_str = _format_countdown_and_time(bucket["resets_at"])
@@ -157,7 +171,7 @@ def render_detail_lines(usage_data, context_data=None, elapsed=None, git_info=No
   # Weekly
   bucket = usage_data.get("seven_day")
   if bucket:
-    util = bucket["utilization"]
+    util = 0 if _is_expired(bucket["resets_at"]) else bucket["utilization"]
     color = get_color_for_utilization(util)
     bar = build_progress_bar(util)
     countdown_str = _format_countdown_and_time(bucket["resets_at"])
@@ -168,7 +182,7 @@ def render_detail_lines(usage_data, context_data=None, elapsed=None, git_info=No
   # Opus
   bucket = usage_data.get("seven_day_opus")
   if bucket:
-    util = bucket["utilization"]
+    util = 0 if _is_expired(bucket["resets_at"]) else bucket["utilization"]
     color = get_color_for_utilization(util)
     bar = build_progress_bar(util)
     countdown_str = _format_countdown_and_time(bucket["resets_at"])
@@ -179,7 +193,7 @@ def render_detail_lines(usage_data, context_data=None, elapsed=None, git_info=No
   # Sonnet
   bucket = usage_data.get("seven_day_sonnet")
   if bucket:
-    util = bucket["utilization"]
+    util = 0 if _is_expired(bucket["resets_at"]) else bucket["utilization"]
     color = get_color_for_utilization(util)
     bar = build_progress_bar(util)
     countdown_str = _format_countdown_and_time(bucket["resets_at"])

@@ -3,7 +3,7 @@
 import json
 import os
 
-_KNOWN_KEYS = {"model_name", "context_pct", "context_used", "context_limit", "cost_usd"}
+_KNOWN_KEYS = {"model_name", "context_pct", "context_used", "context_limit", "output_tokens", "cost_usd"}
 
 
 def parse_stdin_context(raw_stdin):
@@ -45,8 +45,10 @@ def parse_stdin_context(raw_stdin):
     output_tok = ctx.get("total_output_tokens")
     ctx_size = ctx.get("context_window_size")
     if input_tok is not None and ctx_size is not None:
-      result["context_used"] = int(input_tok) + int(output_tok or 0)
+      result["context_used"] = int(input_tok)
       result["context_limit"] = int(ctx_size)
+      if output_tok is not None:
+        result["output_tokens"] = int(output_tok)
   except (AttributeError, KeyError, ValueError, TypeError):
     pass
 

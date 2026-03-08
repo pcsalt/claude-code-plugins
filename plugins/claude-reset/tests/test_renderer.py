@@ -67,10 +67,10 @@ class TestGetColorForUtilization:
 class TestRenderCompactLine:
   def test_contains_all_sections(self):
     usage_data = {
-      "five_hour": {"utilization": 42, "resets_at": "2026-03-07T16:00:00Z"},
-      "seven_day": {"utilization": 35, "resets_at": "2026-03-10T18:00:00Z"},
-      "seven_day_opus": {"utilization": 28, "resets_at": "2026-03-10T18:00:00Z"},
-      "seven_day_sonnet": {"utilization": 12, "resets_at": "2026-03-10T18:00:00Z"},
+      "five_hour": {"utilization": 42, "resets_at": "2030-03-07T16:00:00Z"},
+      "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
+      "seven_day_opus": {"utilization": 28, "resets_at": "2030-03-10T18:00:00Z"},
+      "seven_day_sonnet": {"utilization": 12, "resets_at": "2030-03-10T18:00:00Z"},
       "extra_usage": {"is_enabled": True, "utilization": 31, "used_credits": 1582, "monthly_limit": 5000},
     }
     line = render_compact_line(usage_data)
@@ -83,10 +83,10 @@ class TestRenderCompactLine:
 
   def test_overage_disabled(self):
     usage_data = {
-      "five_hour": {"utilization": 42, "resets_at": "2026-03-07T16:00:00Z"},
-      "seven_day": {"utilization": 35, "resets_at": "2026-03-10T18:00:00Z"},
-      "seven_day_opus": {"utilization": 28, "resets_at": "2026-03-10T18:00:00Z"},
-      "seven_day_sonnet": {"utilization": 12, "resets_at": "2026-03-10T18:00:00Z"},
+      "five_hour": {"utilization": 42, "resets_at": "2030-03-07T16:00:00Z"},
+      "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
+      "seven_day_opus": {"utilization": 28, "resets_at": "2030-03-10T18:00:00Z"},
+      "seven_day_sonnet": {"utilization": 12, "resets_at": "2030-03-10T18:00:00Z"},
       "extra_usage": {"is_enabled": False, "utilization": 0, "used_credits": 0, "monthly_limit": 0},
     }
     line = render_compact_line(usage_data)
@@ -94,10 +94,10 @@ class TestRenderCompactLine:
 
   def test_has_separators(self):
     usage_data = {
-      "five_hour": {"utilization": 10, "resets_at": "2026-03-07T16:00:00Z"},
-      "seven_day": {"utilization": 20, "resets_at": "2026-03-10T18:00:00Z"},
-      "seven_day_opus": {"utilization": 30, "resets_at": "2026-03-10T18:00:00Z"},
-      "seven_day_sonnet": {"utilization": 40, "resets_at": "2026-03-10T18:00:00Z"},
+      "five_hour": {"utilization": 10, "resets_at": "2030-03-07T16:00:00Z"},
+      "seven_day": {"utilization": 20, "resets_at": "2030-03-10T18:00:00Z"},
+      "seven_day_opus": {"utilization": 30, "resets_at": "2030-03-10T18:00:00Z"},
+      "seven_day_sonnet": {"utilization": 40, "resets_at": "2030-03-10T18:00:00Z"},
       "extra_usage": {"is_enabled": True, "utilization": 50, "used_credits": 2500, "monthly_limit": 5000},
     }
     line = render_compact_line(usage_data)
@@ -107,10 +107,10 @@ class TestRenderCompactLine:
 class TestRenderDetailLines:
   def test_returns_five_lines(self):
     usage_data = {
-      "five_hour": {"utilization": 42, "resets_at": "2026-03-07T16:00:00Z"},
-      "seven_day": {"utilization": 35, "resets_at": "2026-03-10T18:00:00Z"},
-      "seven_day_opus": {"utilization": 28, "resets_at": "2026-03-10T18:00:00Z"},
-      "seven_day_sonnet": {"utilization": 12, "resets_at": "2026-03-10T18:00:00Z"},
+      "five_hour": {"utilization": 42, "resets_at": "2030-03-07T16:00:00Z"},
+      "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
+      "seven_day_opus": {"utilization": 28, "resets_at": "2030-03-10T18:00:00Z"},
+      "seven_day_sonnet": {"utilization": 12, "resets_at": "2030-03-10T18:00:00Z"},
       "extra_usage": {"is_enabled": True, "utilization": 31, "used_credits": 1582, "monthly_limit": 5000},
     }
     lines = render_detail_lines(usage_data)
@@ -118,10 +118,10 @@ class TestRenderDetailLines:
 
   def test_session_line_has_countdown(self):
     usage_data = {
-      "five_hour": {"utilization": 42, "resets_at": "2026-03-07T16:00:00Z"},
-      "seven_day": {"utilization": 35, "resets_at": "2026-03-10T18:00:00Z"},
-      "seven_day_opus": {"utilization": 28, "resets_at": "2026-03-10T18:00:00Z"},
-      "seven_day_sonnet": {"utilization": 12, "resets_at": "2026-03-10T18:00:00Z"},
+      "five_hour": {"utilization": 42, "resets_at": "2030-03-07T16:00:00Z"},
+      "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
+      "seven_day_opus": {"utilization": 28, "resets_at": "2030-03-10T18:00:00Z"},
+      "seven_day_sonnet": {"utilization": 12, "resets_at": "2030-03-10T18:00:00Z"},
       "extra_usage": {"is_enabled": True, "utilization": 31, "used_credits": 1582, "monthly_limit": 5000},
     }
     lines = render_detail_lines(usage_data)
@@ -131,10 +131,10 @@ class TestRenderDetailLines:
 
   def test_each_line_has_progress_bar(self):
     usage_data = {
-      "five_hour": {"utilization": 42, "resets_at": "2026-03-07T16:00:00Z"},
-      "seven_day": {"utilization": 35, "resets_at": "2026-03-10T18:00:00Z"},
-      "seven_day_opus": {"utilization": 28, "resets_at": "2026-03-10T18:00:00Z"},
-      "seven_day_sonnet": {"utilization": 12, "resets_at": "2026-03-10T18:00:00Z"},
+      "five_hour": {"utilization": 42, "resets_at": "2030-03-07T16:00:00Z"},
+      "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
+      "seven_day_opus": {"utilization": 28, "resets_at": "2030-03-10T18:00:00Z"},
+      "seven_day_sonnet": {"utilization": 12, "resets_at": "2030-03-10T18:00:00Z"},
       "extra_usage": {"is_enabled": True, "utilization": 31, "used_credits": 1582, "monthly_limit": 5000},
     }
     lines = render_detail_lines(usage_data)
@@ -143,10 +143,10 @@ class TestRenderDetailLines:
 
   def test_overage_line_shows_dollars(self):
     usage_data = {
-      "five_hour": {"utilization": 42, "resets_at": "2026-03-07T16:00:00Z"},
-      "seven_day": {"utilization": 35, "resets_at": "2026-03-10T18:00:00Z"},
-      "seven_day_opus": {"utilization": 28, "resets_at": "2026-03-10T18:00:00Z"},
-      "seven_day_sonnet": {"utilization": 12, "resets_at": "2026-03-10T18:00:00Z"},
+      "five_hour": {"utilization": 42, "resets_at": "2030-03-07T16:00:00Z"},
+      "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
+      "seven_day_opus": {"utilization": 28, "resets_at": "2030-03-10T18:00:00Z"},
+      "seven_day_sonnet": {"utilization": 12, "resets_at": "2030-03-10T18:00:00Z"},
       "extra_usage": {"is_enabled": True, "utilization": 31, "used_credits": 1582, "monthly_limit": 5000},
     }
     lines = render_detail_lines(usage_data)
@@ -157,8 +157,8 @@ class TestRenderDetailLines:
   def test_missing_bucket_skipped(self):
     """If a bucket is missing from response, that line should be skipped."""
     usage_data = {
-      "five_hour": {"utilization": 42, "resets_at": "2026-03-07T16:00:00Z"},
-      "seven_day": {"utilization": 35, "resets_at": "2026-03-10T18:00:00Z"},
+      "five_hour": {"utilization": 42, "resets_at": "2030-03-07T16:00:00Z"},
+      "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
       "extra_usage": {"is_enabled": True, "utilization": 31, "used_credits": 1582, "monthly_limit": 5000},
     }
     lines = render_detail_lines(usage_data)
@@ -170,8 +170,8 @@ class TestRenderWithContext:
 
   def _make_usage_data(self):
     return {
-      "five_hour": {"utilization": 42, "resets_at": "2026-03-07T16:00:00Z"},
-      "seven_day": {"utilization": 35, "resets_at": "2026-03-10T18:00:00Z"},
+      "five_hour": {"utilization": 42, "resets_at": "2030-03-07T16:00:00Z"},
+      "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
     }
 
   def test_compact_includes_context_bar(self):
@@ -216,13 +216,90 @@ class TestRenderWithContext:
     assert FILLED_CHAR in context_lines[0] or EMPTY_CHAR in context_lines[0]
 
 
+class TestExpiredBucketRendering:
+  """Expired buckets should show 0% utilization."""
+
+  def _make_usage_with_expired_session(self):
+    return {
+      "five_hour": {"utilization": 25, "resets_at": "2020-01-01T00:00:00Z"},
+      "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
+    }
+
+  def test_detail_expired_session_shows_zero_percent(self):
+    lines = render_detail_lines(self._make_usage_with_expired_session())
+    session_line = [l for l in lines if "Session" in l][0]
+    assert " 0%" in session_line
+    assert "25%" not in session_line
+    assert "expired" in session_line
+
+  def test_detail_expired_session_bar_is_empty(self):
+    lines = render_detail_lines(self._make_usage_with_expired_session())
+    session_line = [l for l in lines if "Session" in l][0]
+    assert FILLED_CHAR not in session_line
+
+  def test_compact_expired_session_shows_zero_percent(self):
+    line = render_compact_line(self._make_usage_with_expired_session())
+    assert "25%" not in line
+    assert " 0%" in line
+
+  def test_non_expired_bucket_unchanged(self):
+    lines = render_detail_lines(self._make_usage_with_expired_session())
+    weekly_line = [l for l in lines if "Weekly" in l][0]
+    assert "35%" in weekly_line
+
+  def test_all_expired_buckets_show_zero(self):
+    usage = {
+      "five_hour": {"utilization": 25, "resets_at": "2020-01-01T00:00:00Z"},
+      "seven_day": {"utilization": 35, "resets_at": "2020-01-01T00:00:00Z"},
+      "seven_day_opus": {"utilization": 10, "resets_at": "2020-01-01T00:00:00Z"},
+      "seven_day_sonnet": {"utilization": 5, "resets_at": "2020-01-01T00:00:00Z"},
+    }
+    lines = render_detail_lines(usage)
+    for line in lines:
+      assert " 0%" in line
+
+
+class TestRenderWithOutputTokens:
+  """Test output tokens display in detail view."""
+
+  def _make_usage_data(self):
+    return {
+      "five_hour": {"utilization": 42, "resets_at": "2030-03-07T16:00:00Z"},
+      "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
+    }
+
+  def test_detail_shows_output_tokens_line(self):
+    context = {"context_pct": 42.5, "context_used": 85000, "context_limit": 200000, "output_tokens": 50000}
+    lines = render_detail_lines(self._make_usage_data(), context_data=context)
+    output_lines = [l for l in lines if "Output" in l]
+    assert len(output_lines) == 1
+    assert "50k" in output_lines[0]
+
+  def test_detail_no_output_line_when_missing(self):
+    context = {"context_pct": 42.5, "context_used": 85000, "context_limit": 200000}
+    lines = render_detail_lines(self._make_usage_data(), context_data=context)
+    output_lines = [l for l in lines if "Output" in l]
+    assert len(output_lines) == 0
+
+  def test_detail_no_output_line_when_zero(self):
+    context = {"context_pct": 42.5, "context_used": 85000, "context_limit": 200000, "output_tokens": 0}
+    lines = render_detail_lines(self._make_usage_data(), context_data=context)
+    output_lines = [l for l in lines if "Output" in l]
+    assert len(output_lines) == 0
+
+  def test_compact_shows_output_tokens(self):
+    context = {"context_pct": 42.5, "context_used": 85000, "context_limit": 200000, "output_tokens": 30000}
+    line = render_compact_line(self._make_usage_data(), context_data=context)
+    assert "30k" in line
+
+
 class TestRenderWithClock:
   """Test session clock rendering in both compact and detail views."""
 
   def _make_usage_data(self):
     return {
-      "five_hour": {"utilization": 42, "resets_at": "2026-03-07T16:00:00Z"},
-      "seven_day": {"utilization": 35, "resets_at": "2026-03-10T18:00:00Z"},
+      "five_hour": {"utilization": 42, "resets_at": "2030-03-07T16:00:00Z"},
+      "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
     }
 
   def test_compact_includes_elapsed(self):
@@ -252,8 +329,8 @@ class TestRenderWithGit:
 
   def _make_usage_data(self):
     return {
-      "five_hour": {"utilization": 42, "resets_at": "2026-03-07T16:00:00Z"},
-      "seven_day": {"utilization": 35, "resets_at": "2026-03-10T18:00:00Z"},
+      "five_hour": {"utilization": 42, "resets_at": "2030-03-07T16:00:00Z"},
+      "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
     }
 
   def test_compact_includes_branch(self):
