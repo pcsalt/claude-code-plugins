@@ -8,6 +8,11 @@ from claude_reset.cache import (
   write_cache,
   is_cache_valid,
   has_expired_buckets,
+  acquire_fetch_lock,
+  release_fetch_lock,
+  is_fetch_locked,
+  CACHE_TTL_SECONDS,
+  LOCK_MAX_AGE_SECONDS,
 )
 
 
@@ -128,7 +133,7 @@ class TestIsCacheValid:
 
   def test_invalid_when_ttl_expired(self, sample_usage_data):
     """Cache older than TTL should be invalid even if resets are in future."""
-    old_time = (datetime.now(timezone.utc) - timedelta(seconds=90)).isoformat()
+    old_time = (datetime.now(timezone.utc) - timedelta(seconds=200)).isoformat()
     cache_entry = {
       "usage_data": sample_usage_data,
       "fetched_at": old_time,
@@ -187,3 +192,56 @@ class TestHasExpiredBuckets:
       "five_hour": {"utilization": 42, "resets_at": future},
     }
     assert has_expired_buckets(usage_data) is False
+
+
+class TestCacheTTL:
+  def test_ttl_is_180_seconds(self):
+    assert CACHE_TTL_SECONDS == 180
+
+
+class TestFetchLock:
+  def test_acquire_creates_lock_file(self, cache_dir):
+    lock_path = os.path.join(cache_dir, "lock")
+    assert acquire_fetch_lock(lock_path) is True
+    assert os.path.exists(lock_path)
+
+  def test_is_locked_after_acquire(self, cache_dir):
+    lock_path = os.path.join(cache_dir, "lock")
+    acquire_fetch_lock(lock_path)
+    assert is_fetch_locked(lock_path) is True
+
+  def test_not_locked_after_release(self, cache_dir):
+    lock_path = os.path.join(cache_dir, "lock")
+    acquire_fetch_lock(lock_path)
+    release_fetch_lock(lock_path)
+    assert is_fetch_locked(lock_path) is False
+
+  def test_not_locked_when_no_file(self, cache_dir):
+    lock_path = os.path.join(cache_dir, "lock")
+    assert is_fetch_locked(lock_path) is False
+
+  def test_acquire_fails_when_already_locked(self, cache_dir):
+    lock_path = os.path.join(cache_dir, "lock")
+    assert acquire_fetch_lock(lock_path) is True
+    assert acquire_fetch_lock(lock_path) is False
+
+  def test_stale_lock_is_not_locked(self, cache_dir):
+    """Lock older than LOCK_MAX_AGE_SECONDS is considered expired."""
+    lock_path = os.path.join(cache_dir, "lock")
+    stale_time = (datetime.now(timezone.utc) - timedelta(seconds=LOCK_MAX_AGE_SECONDS + 5)).isoformat()
+    with open(lock_path, "w") as f:
+      f.write(stale_time)
+    assert is_fetch_locked(lock_path) is False
+
+  def test_acquire_succeeds_over_stale_lock(self, cache_dir):
+    """Can acquire lock when existing lock is stale."""
+    lock_path = os.path.join(cache_dir, "lock")
+    stale_time = (datetime.now(timezone.utc) - timedelta(seconds=LOCK_MAX_AGE_SECONDS + 5)).isoformat()
+    with open(lock_path, "w") as f:
+      f.write(stale_time)
+    assert acquire_fetch_lock(lock_path) is True
+
+  def test_release_handles_missing_file(self, cache_dir):
+    """Release should not raise if lock file doesn't exist."""
+    lock_path = os.path.join(cache_dir, "nonexistent_lock")
+    release_fetch_lock(lock_path)  # should not raise

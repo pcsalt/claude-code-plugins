@@ -19,8 +19,11 @@ import os
 import sys
 import argparse
 
-from claude_reset.api import read_oauth_token, fetch_usage_data, refresh_oauth_token
-from claude_reset.cache import read_cache, write_cache, is_cache_valid, has_expired_buckets
+from claude_reset.api import read_oauth_token, fetch_usage_data, refresh_oauth_token, RateLimitError
+from claude_reset.cache import (
+  read_cache, write_cache, is_cache_valid, has_expired_buckets,
+  acquire_fetch_lock, release_fetch_lock, is_fetch_locked,
+)
 from claude_reset.renderer import render_compact_line, render_detail_lines
 from claude_reset.stdin_context import parse_stdin_context, persist_context, load_persisted_context
 from claude_reset.clock import get_session_elapsed
@@ -29,6 +32,7 @@ from claude_reset.git_info import get_git_info
 
 CREDENTIALS_PATH = os.path.expanduser("~/.claude/.credentials.json")
 CACHE_PATH = os.path.expanduser("~/.claude/claude-reset-cache.json")
+LOCK_PATH = os.path.expanduser("~/.claude/claude-reset-cache.lock")
 STDIN_CTX_PATH = os.path.expanduser("~/.claude/claude-reset-stdin-ctx.json")
 CLOCK_PATH = os.path.expanduser("~/.claude/claude-reset-session.json")
 
@@ -43,11 +47,22 @@ def _fallback_cache(cached):
   return usage_data
 
 
+def _stale_cache(cached):
+  """Return cached usage data unconditionally (for 429 fallback)."""
+  if cached is None:
+    return None
+  return cached.get("usage_data")
+
+
 def get_usage_data():
   """Get usage data from cache or API. Returns usage dict or None on error."""
   cached = read_cache(CACHE_PATH)
   if cached is not None and is_cache_valid(cached):
     return cached["usage_data"]
+
+  # Another process is already fetching — serve stale cache
+  if is_fetch_locked(LOCK_PATH):
+    return _stale_cache(cached)
 
   try:
     token_info = read_oauth_token(CREDENTIALS_PATH)
@@ -63,12 +78,18 @@ def get_usage_data():
     except Exception:
       return _fallback_cache(cached)
 
+  acquired = acquire_fetch_lock(LOCK_PATH)
   try:
     usage_data = fetch_usage_data(access_token)
     write_cache(CACHE_PATH, usage_data)
     return usage_data
+  except RateLimitError:
+    return _stale_cache(cached)
   except Exception:
     return _fallback_cache(cached)
+  finally:
+    if acquired:
+      release_fetch_lock(LOCK_PATH)
 
 
 def get_context_data():

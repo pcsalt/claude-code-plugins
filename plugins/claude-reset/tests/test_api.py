@@ -7,6 +7,7 @@ from claude_reset.api import (
   read_oauth_token,
   fetch_usage_data,
   refresh_oauth_token,
+  RateLimitError,
   USAGE_API_URL,
   TOKEN_REFRESH_URL,
   OAUTH_BETA_HEADER,
@@ -136,6 +137,15 @@ class TestFetchUsageData:
     )
     with pytest.raises(HTTPError):
       fetch_usage_data("bad-token")
+
+  @patch("claude_reset.api.urlopen")
+  def test_429_raises_rate_limit_error(self, mock_urlopen):
+    from urllib.error import HTTPError
+    mock_urlopen.side_effect = HTTPError(
+      url=USAGE_API_URL, code=429, msg="Too Many Requests", hdrs={}, fp=None
+    )
+    with pytest.raises(RateLimitError):
+      fetch_usage_data("any-token")
 
   @patch("claude_reset.api.urlopen")
   def test_network_error_raises(self, mock_urlopen):

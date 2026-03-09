@@ -5,6 +5,11 @@ import time
 from urllib.request import Request, urlopen
 
 
+class RateLimitError(Exception):
+  """Raised when the API returns 429 Too Many Requests."""
+  pass
+
+
 USAGE_API_URL = "https://api.anthropic.com/api/oauth/usage"
 TOKEN_REFRESH_URL = "https://console.anthropic.com/v1/oauth/token"
 OAUTH_BETA_HEADER = "oauth-2025-04-20"
@@ -64,15 +69,22 @@ def fetch_usage_data(access_token):
   """Fetch usage/rate limit data from Anthropic OAuth usage API.
 
   Returns parsed JSON response dict.
-  Raises HTTPError on API errors, URLError on network errors.
+  Raises RateLimitError on 429, HTTPError on other API errors, URLError on network errors.
   """
+  from urllib.error import HTTPError
+
   request = Request(USAGE_API_URL)
   request.add_header("Authorization", f"Bearer {access_token}")
   request.add_header("Anthropic-beta", OAUTH_BETA_HEADER)
   request.add_header("Accept", "application/json")
 
-  with urlopen(request) as response:
-    return json.loads(response.read())
+  try:
+    with urlopen(request) as response:
+      return json.loads(response.read())
+  except HTTPError as e:
+    if e.code == 429:
+      raise RateLimitError("Rate limited by API") from e
+    raise
 
 
 def refresh_oauth_token(refresh_token):
