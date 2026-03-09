@@ -29,11 +29,11 @@ class TestParseStdinContext:
       }
     })
     result = parse_stdin_context(raw)
-    # context_pct is recalculated from input tokens only: (85000/200000)*100 = 42.5
+    # context_pct trusts API's used_percentage when provided
     assert result["context_pct"] == 42.5
-    assert result["context_used"] == 85000
+    # context_used = input + output tokens
+    assert result["context_used"] == 90000
     assert result["context_limit"] == 200000
-    assert result["output_tokens"] == 5000
     assert result["model_name"] == "Opus 4.6"
     assert result["cost_usd"] == 0.15
 
@@ -48,10 +48,10 @@ class TestParseStdinContext:
       },
     })
     result = parse_stdin_context(raw)
-    # context_pct recalculated from input tokens: (50000/200000)*100 = 25.0
-    assert result["context_pct"] == 25.0
-    assert result["context_used"] == 50000
-    assert result["output_tokens"] == 10000
+    # context_pct trusts API's used_percentage when provided
+    assert result["context_pct"] == 30.0
+    # context_used = input + output tokens
+    assert result["context_used"] == 60000
     assert result["context_limit"] == 200000
 
   def test_parses_percentage_only(self):
@@ -154,9 +154,8 @@ class TestPersistContext:
         f.write("not valid json")
       assert load_persisted_context(path) == {}
 
-  def test_recalculates_context_pct_from_input_tokens_only(self):
-    """When tokens are available, context_pct should be derived from input
-    tokens only, not input+output, to avoid exceeding 100%."""
+  def test_trusts_api_used_percentage_when_provided(self):
+    """When API provides used_percentage, trust it instead of recalculating."""
     raw = json.dumps({
       "data": {
         "context_window": {
@@ -168,14 +167,14 @@ class TestPersistContext:
       }
     })
     result = parse_stdin_context(raw)
-    # Should be recalculated from input only: (1000/200000)*100 = 0.5, not 60.0
-    assert result["context_pct"] == pytest.approx(0.5)
-    assert result["context_used"] == 1000
-    assert result["output_tokens"] == 500
+    # Should trust API's used_percentage
+    assert result["context_pct"] == 60.0
+    # context_used = input + output
+    assert result["context_used"] == 1500
     assert result["context_limit"] == 200000
 
-  def test_output_tokens_stored_separately(self):
-    """Output tokens should be stored as a separate field, not added to context_used."""
+  def test_context_used_includes_output_tokens(self):
+    """context_used should include both input and output tokens."""
     raw = json.dumps({
       "data": {
         "context_window": {
@@ -186,12 +185,13 @@ class TestPersistContext:
       }
     })
     result = parse_stdin_context(raw)
-    assert result["context_used"] == 160000
-    assert result["output_tokens"] == 50000
-    assert result["context_pct"] == pytest.approx(80.0)
+    # context_used = input + output
+    assert result["context_used"] == 210000
+    # No used_percentage from API, so recalculated: (210000/200000)*100 = 105.0
+    assert result["context_pct"] == pytest.approx(105.0)
 
-  def test_no_output_tokens_field_when_missing(self):
-    """When output tokens are not in stdin, output_tokens should not be in result."""
+  def test_no_output_tokens_defaults_to_zero(self):
+    """When output tokens are not in stdin, context_used equals input tokens only."""
     raw = json.dumps({
       "data": {
         "context_window": {
@@ -202,7 +202,6 @@ class TestPersistContext:
     })
     result = parse_stdin_context(raw)
     assert result["context_used"] == 50000
-    assert "output_tokens" not in result
 
   def test_only_persists_known_keys(self):
     """Unknown keys should not be persisted."""

@@ -70,9 +70,7 @@ def render_compact_line(usage_data, context_data=None, elapsed=None, git_info=No
     ctx_pct = context_data["context_pct"]
     color = get_color_for_utilization(ctx_pct)
     bar = build_progress_bar(ctx_pct)
-    out_tok = context_data.get("output_tokens")
-    out_label = f" {ANSI_DIM}\u2191{_fmt_tokens(out_tok)}{ANSI_RESET}" if out_tok else ""
-    parts.append(f"\U0001f4d0 {bar} {color}{ctx_pct:2.0f}%{ANSI_RESET}{out_label}")
+    parts.append(f"\U0001f4d0 {bar} {color}{ctx_pct:2.0f}%{ANSI_RESET}")
 
   # Session
   bucket = usage_data.get("five_hour")
@@ -151,11 +149,6 @@ def render_detail_lines(usage_data, context_data=None, elapsed=None, git_info=No
     lines.append(
       f"\U0001f4d0 Context  [{bar}]  {color}{ctx_pct:2.0f}%{ANSI_RESET}{token_label}"
     )
-    out_tok = context_data.get("output_tokens")
-    if out_tok:
-      lines.append(
-        f"\U0001f4e4 Output   {ANSI_DIM}{_fmt_tokens(out_tok)} tokens{ANSI_RESET}"
-      )
 
   # Session
   bucket = usage_data.get("five_hour")

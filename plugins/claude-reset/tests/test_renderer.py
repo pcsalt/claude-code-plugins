@@ -259,39 +259,6 @@ class TestExpiredBucketRendering:
       assert " 0%" in line
 
 
-class TestRenderWithOutputTokens:
-  """Test output tokens display in detail view."""
-
-  def _make_usage_data(self):
-    return {
-      "five_hour": {"utilization": 42, "resets_at": "2030-03-07T16:00:00Z"},
-      "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
-    }
-
-  def test_detail_shows_output_tokens_line(self):
-    context = {"context_pct": 42.5, "context_used": 85000, "context_limit": 200000, "output_tokens": 50000}
-    lines = render_detail_lines(self._make_usage_data(), context_data=context)
-    output_lines = [l for l in lines if "Output" in l]
-    assert len(output_lines) == 1
-    assert "50k" in output_lines[0]
-
-  def test_detail_no_output_line_when_missing(self):
-    context = {"context_pct": 42.5, "context_used": 85000, "context_limit": 200000}
-    lines = render_detail_lines(self._make_usage_data(), context_data=context)
-    output_lines = [l for l in lines if "Output" in l]
-    assert len(output_lines) == 0
-
-  def test_detail_no_output_line_when_zero(self):
-    context = {"context_pct": 42.5, "context_used": 85000, "context_limit": 200000, "output_tokens": 0}
-    lines = render_detail_lines(self._make_usage_data(), context_data=context)
-    output_lines = [l for l in lines if "Output" in l]
-    assert len(output_lines) == 0
-
-  def test_compact_shows_output_tokens(self):
-    context = {"context_pct": 42.5, "context_used": 85000, "context_limit": 200000, "output_tokens": 30000}
-    line = render_compact_line(self._make_usage_data(), context_data=context)
-    assert "30k" in line
-
 
 class TestRenderWithClock:
   """Test session clock rendering in both compact and detail views."""
