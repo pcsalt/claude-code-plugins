@@ -37,6 +37,8 @@ def build_progress_bar(utilization):
 
 def _is_expired(resets_at_str):
   """Check if a resets_at timestamp is in the past."""
+  if not resets_at_str:
+    return True
   reset_dt = iso_to_datetime(resets_at_str)
   now = datetime.now(timezone.utc)
   return reset_dt <= now
@@ -44,6 +46,8 @@ def _is_expired(resets_at_str):
 
 def _format_countdown_and_time(resets_at_str):
   """Format countdown and local time from a resets_at ISO string."""
+  if not resets_at_str:
+    return "—"
   reset_dt = iso_to_datetime(resets_at_str)
   now = datetime.now(timezone.utc)
   delta = reset_dt - now

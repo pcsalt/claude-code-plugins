@@ -260,6 +260,56 @@ class TestExpiredBucketRendering:
 
 
 
+class TestEmptyResetsAt:
+  """Empty or None resets_at should be treated as expired (0% util), not crash."""
+
+  def test_detail_empty_resets_at_shows_zero(self):
+    usage = {
+      "five_hour": {"utilization": 50, "resets_at": ""},
+      "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
+    }
+    lines = render_detail_lines(usage)
+    session_line = [l for l in lines if "Session" in l][0]
+    assert " 0%" in session_line
+
+  def test_detail_none_resets_at_shows_zero(self):
+    usage = {
+      "five_hour": {"utilization": 50, "resets_at": None},
+      "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
+    }
+    lines = render_detail_lines(usage)
+    session_line = [l for l in lines if "Session" in l][0]
+    assert " 0%" in session_line
+
+  def test_compact_empty_resets_at_no_crash(self):
+    usage = {
+      "five_hour": {"utilization": 50, "resets_at": ""},
+      "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
+    }
+    line = render_compact_line(usage)
+    assert " 0%" in line
+
+  def test_detail_empty_resets_at_countdown_is_dash(self):
+    usage = {
+      "five_hour": {"utilization": 50, "resets_at": ""},
+      "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
+    }
+    lines = render_detail_lines(usage)
+    session_line = [l for l in lines if "Session" in l][0]
+    assert "\u2014" in session_line
+
+  def test_all_buckets_empty_resets_at(self):
+    usage = {
+      "five_hour": {"utilization": 50, "resets_at": ""},
+      "seven_day": {"utilization": 35, "resets_at": ""},
+      "seven_day_opus": {"utilization": 10, "resets_at": ""},
+      "seven_day_sonnet": {"utilization": 5, "resets_at": ""},
+    }
+    lines = render_detail_lines(usage)
+    for line in lines:
+      assert " 0%" in line
+
+
 class TestRenderWithClock:
   """Test session clock rendering in both compact and detail views."""
 
