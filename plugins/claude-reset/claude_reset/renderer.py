@@ -12,6 +12,32 @@ EMPTY_CHAR = "\u25b1"   # ▱
 
 BAR_WIDTH = 20
 
+# Pie-chart style single-character indicators for compact mode
+PIE_CHARS = [
+  "\u25cb",  # ○  0%
+  "\u25d4",  # ◔  1-25%
+  "\u25d1",  # ◑  26-50%
+  "\u25d5",  # ◕  51-75%
+  "\u25cf",  # ●  76-100%
+]
+
+
+def build_pie_indicator(utilization):
+  """Build a colored single-character pie indicator."""
+  capped = min(utilization, 100)
+  if capped <= 0:
+    idx = 0
+  elif capped <= 25:
+    idx = 1
+  elif capped <= 50:
+    idx = 2
+  elif capped <= 75:
+    idx = 3
+  else:
+    idx = 4
+  color = get_color_for_utilization(utilization)
+  return f"{color}{PIE_CHARS[idx]}{ANSI_RESET}"
+
 
 def get_color_for_utilization(utilization):
   """Return ANSI color code based on utilization percentage."""
@@ -73,50 +99,44 @@ def render_compact_line(usage_data, context_data=None, elapsed=None, git_info=No
   if context_data and context_data.get("context_pct") is not None:
     ctx_pct = context_data["context_pct"]
     color = get_color_for_utilization(ctx_pct)
-    bar = build_progress_bar(ctx_pct)
-    parts.append(f"\U0001f4d0 {bar} {color}{ctx_pct:2.0f}%{ANSI_RESET}")
+    parts.append(f"\U0001f4d0 {color}{ctx_pct:2.0f}%{ANSI_RESET}")
 
   # Session
   bucket = usage_data.get("five_hour")
   if bucket:
     util = 0 if _is_expired(bucket["resets_at"]) else bucket["utilization"]
     color = get_color_for_utilization(util)
-    bar = build_progress_bar(util)
     countdown_str = _format_countdown_and_time(bucket["resets_at"])
-    parts.append(f"\u26a1 {bar} {color}{util:2.0f}%{ANSI_RESET} {countdown_str}")
+    parts.append(f"\u26a1 {color}{util:2.0f}%{ANSI_RESET} {countdown_str}")
 
   # Weekly
   bucket = usage_data.get("seven_day")
   if bucket:
     util = 0 if _is_expired(bucket["resets_at"]) else bucket["utilization"]
     color = get_color_for_utilization(util)
-    bar = build_progress_bar(util)
     countdown_str = _format_countdown_and_time(bucket["resets_at"])
-    parts.append(f"\U0001f4c5 {bar} {color}{util:2.0f}%{ANSI_RESET} {countdown_str}")
+    parts.append(f"\U0001f4c5 {color}{util:2.0f}%{ANSI_RESET} {countdown_str}")
 
   # Opus
   bucket = usage_data.get("seven_day_opus")
   if bucket:
     util = 0 if _is_expired(bucket["resets_at"]) else bucket["utilization"]
     color = get_color_for_utilization(util)
-    bar = build_progress_bar(util)
-    parts.append(f"\U0001f52e {bar} {color}{util:2.0f}%{ANSI_RESET}")
+    parts.append(f"\U0001f52e {color}{util:2.0f}%{ANSI_RESET}")
 
   # Sonnet
   bucket = usage_data.get("seven_day_sonnet")
   if bucket:
     util = 0 if _is_expired(bucket["resets_at"]) else bucket["utilization"]
     color = get_color_for_utilization(util)
-    bar = build_progress_bar(util)
-    parts.append(f"\u2728 {bar} {color}{util:2.0f}%{ANSI_RESET}")
+    parts.append(f"\u2728 {color}{util:2.0f}%{ANSI_RESET}")
 
   # Overage
   extra = usage_data.get("extra_usage")
   if extra and extra.get("is_enabled"):
     used = (extra.get("used_credits") or 0) / 100
     limit = (extra.get("monthly_limit") or 0) / 100
-    bar = build_progress_bar(extra.get("utilization") or 0)
-    parts.append(f"\U0001f4b0 {bar} ${used:.2f}/${limit:.2f}")
+    parts.append(f"\U0001f4b0 ${used:.2f}/${limit:.2f}")
   elif extra:
     parts.append(f"\U0001f4b0 off")
 

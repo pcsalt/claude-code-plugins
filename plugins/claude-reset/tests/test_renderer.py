@@ -174,11 +174,11 @@ class TestRenderWithContext:
       "seven_day": {"utilization": 35, "resets_at": "2030-03-10T18:00:00Z"},
     }
 
-  def test_compact_includes_context_bar(self):
+  def test_compact_includes_context_percentage(self):
     context = {"context_pct": 55.0, "context_used": 110000, "context_limit": 200000}
     line = render_compact_line(self._make_usage_data(), context_data=context)
     assert "55%" in line
-    assert FILLED_CHAR in line
+    assert "\U0001f4d0" in line  # 📐 context emoji
 
   def test_compact_no_context_when_none(self):
     line_without = render_compact_line(self._make_usage_data())
