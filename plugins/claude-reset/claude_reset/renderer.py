@@ -91,7 +91,7 @@ def _fmt_tokens(n):
   return str(n)
 
 
-def render_compact_line(usage_data, context_data=None, elapsed=None, git_info=None, cwd=None):
+def render_compact_line(usage_data, context_data=None, elapsed=None, git_info=None, cwd=None, remote_control=None):
   """Render single-line compact view (Option E)."""
   parts = []
 
@@ -155,7 +155,7 @@ def render_compact_line(usage_data, context_data=None, elapsed=None, git_info=No
   return f" {ANSI_DIM}\u2502{ANSI_RESET} ".join(parts)
 
 
-def render_detail_lines(usage_data, context_data=None, elapsed=None, git_info=None, cwd=None):
+def render_detail_lines(usage_data, context_data=None, elapsed=None, git_info=None, cwd=None, remote_control=None):
   """Render multi-line detailed view (Option F)."""
   lines = []
 
@@ -232,10 +232,16 @@ def render_detail_lines(usage_data, context_data=None, elapsed=None, git_info=No
   elif extra:
     lines.append(f"\U0001f4b0 Overage  off")
 
-  # Clock
+  # Clock + Remote Control (combined line)
   if elapsed is not None:
     from claude_reset.clock import format_elapsed
-    lines.append(f"\U0001f551 Elapsed  {format_elapsed(elapsed)}")
+    elapsed_str = f"\U0001f551 Elapsed  {format_elapsed(elapsed)}"
+    rc_active = remote_control and remote_control.get("active", False)
+    if rc_active:
+      elapsed_str += f"  \U0001f4e1 {ANSI_GREEN}RC:ON{ANSI_RESET}"
+    else:
+      elapsed_str += f"  \U0001f4e1 {ANSI_DIM}RC:OFF{ANSI_RESET}"
+    lines.append(elapsed_str)
 
   # CWD + Git
   if cwd or git_info is not None:

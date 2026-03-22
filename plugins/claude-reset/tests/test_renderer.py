@@ -322,7 +322,7 @@ class TestRenderWithClock:
   def test_compact_includes_elapsed(self):
     from datetime import timedelta
     line = render_compact_line(self._make_usage_data(), elapsed=timedelta(minutes=23))
-    assert "23m" in line
+    assert "00h 23m" in line
 
   def test_compact_no_clock_when_none(self):
     line = render_compact_line(self._make_usage_data(), elapsed=None)
@@ -333,12 +333,32 @@ class TestRenderWithClock:
     lines = render_detail_lines(self._make_usage_data(), elapsed=timedelta(hours=1, minutes=15))
     elapsed_lines = [l for l in lines if "Elapsed" in l]
     assert len(elapsed_lines) == 1
-    assert "1h 15m" in elapsed_lines[0]
+    assert "01h 15m" in elapsed_lines[0]
 
   def test_detail_elapsed_is_last_line(self):
     from datetime import timedelta
     lines = render_detail_lines(self._make_usage_data(), elapsed=timedelta(minutes=5))
     assert "Elapsed" in lines[-1]
+
+  def test_detail_elapsed_includes_rc_off_by_default(self):
+    from datetime import timedelta
+    lines = render_detail_lines(self._make_usage_data(), elapsed=timedelta(minutes=5))
+    elapsed_line = [l for l in lines if "Elapsed" in l][0]
+    assert "RC:OFF" in elapsed_line
+
+  def test_detail_elapsed_includes_rc_on(self):
+    from datetime import timedelta
+    rc = {"active": True}
+    lines = render_detail_lines(self._make_usage_data(), elapsed=timedelta(minutes=5), remote_control=rc)
+    elapsed_line = [l for l in lines if "Elapsed" in l][0]
+    assert "RC:ON" in elapsed_line
+
+  def test_detail_elapsed_includes_rc_off(self):
+    from datetime import timedelta
+    rc = {"active": False}
+    lines = render_detail_lines(self._make_usage_data(), elapsed=timedelta(minutes=5), remote_control=rc)
+    elapsed_line = [l for l in lines if "Elapsed" in l][0]
+    assert "RC:OFF" in elapsed_line
 
 
 class TestRenderWithGit:

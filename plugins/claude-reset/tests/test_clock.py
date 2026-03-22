@@ -38,25 +38,31 @@ class TestWriteAndReadSessionStart:
 
 class TestFormatElapsed:
   def test_minutes_only(self):
-    assert format_elapsed(timedelta(minutes=23)) == "23m"
+    assert format_elapsed(timedelta(minutes=23)) == "00h 23m"
 
   def test_hours_and_minutes(self):
-    assert format_elapsed(timedelta(hours=1, minutes=15)) == "1h 15m"
+    assert format_elapsed(timedelta(hours=1, minutes=15)) == "01h 15m"
 
   def test_less_than_one_minute(self):
-    assert format_elapsed(timedelta(seconds=30)) == "< 1m"
+    assert format_elapsed(timedelta(seconds=30)) == "00h 00m"
 
   def test_zero(self):
-    assert format_elapsed(timedelta(0)) == "< 1m"
+    assert format_elapsed(timedelta(0)) == "00h 00m"
 
   def test_exactly_one_hour(self):
-    assert format_elapsed(timedelta(hours=1)) == "1h 0m"
+    assert format_elapsed(timedelta(hours=1)) == "01h 00m"
 
   def test_multiple_hours(self):
-    assert format_elapsed(timedelta(hours=3, minutes=45)) == "3h 45m"
+    assert format_elapsed(timedelta(hours=3, minutes=45)) == "03h 45m"
 
   def test_days(self):
-    assert format_elapsed(timedelta(days=1, hours=2)) == "26h 0m"
+    assert format_elapsed(timedelta(days=1, hours=2)) == "26h 00m"
+
+  def test_fixed_width(self):
+    """All outputs should have the same length for fixed-width display."""
+    cases = [timedelta(0), timedelta(minutes=5), timedelta(hours=1, minutes=15), timedelta(hours=10)]
+    lengths = [len(format_elapsed(d)) for d in cases]
+    assert len(set(lengths)) == 1
 
 
 class TestGetSessionElapsed:

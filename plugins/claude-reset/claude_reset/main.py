@@ -28,6 +28,7 @@ from claude_reset.renderer import render_compact_line, render_detail_lines
 from claude_reset.stdin_context import parse_stdin_context, persist_context, load_persisted_context
 from claude_reset.clock import get_session_elapsed
 from claude_reset.git_info import get_git_info
+from claude_reset.remote_control import is_remote_control_active
 
 
 CREDENTIALS_PATH = os.path.expanduser("~/.claude/.credentials.json")
@@ -124,6 +125,7 @@ def main():
   usage_data = get_usage_data()
   elapsed = get_session_elapsed(CLOCK_PATH)
   git = get_git_info()
+  rc = is_remote_control_active()
   cwd = os.getcwd()
 
   if usage_data is None:
@@ -131,9 +133,9 @@ def main():
     return
 
   if args.compact:
-    print(render_compact_line(usage_data, context_data=context_data, elapsed=elapsed, git_info=git, cwd=cwd))
+    print(render_compact_line(usage_data, context_data=context_data, elapsed=elapsed, git_info=git, cwd=cwd, remote_control=rc))
   else:
-    for line in render_detail_lines(usage_data, context_data=context_data, elapsed=elapsed, git_info=git, cwd=cwd):
+    for line in render_detail_lines(usage_data, context_data=context_data, elapsed=elapsed, git_info=git, cwd=cwd, remote_control=rc):
       print(line)
 
 

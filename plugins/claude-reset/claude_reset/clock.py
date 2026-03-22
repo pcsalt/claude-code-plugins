@@ -25,18 +25,12 @@ def read_session_start(path):
 
 
 def format_elapsed(delta):
-  """Format elapsed timedelta as human-readable string."""
+  """Format elapsed timedelta as fixed-width string: XXh XXm."""
   total_seconds = int(delta.total_seconds())
-  if total_seconds < 60:
-    return "< 1m"
-
   total_minutes = total_seconds // 60
   hours = total_minutes // 60
   minutes = total_minutes % 60
-
-  if hours > 0:
-    return f"{hours}h {minutes}m"
-  return f"{minutes}m"
+  return f"{hours:02d}h {minutes:02d}m"
 
 
 def get_session_elapsed(path):
