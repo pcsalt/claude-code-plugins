@@ -9,7 +9,7 @@ A lightweight Claude Code status line plugin that displays rate limits, context 
 - **Weekly (7d)** — all models combined
 - **Opus / Sonnet** — model-specific weekly limits (shown only when available)
 - **Overage** — monthly spend vs budget
-- **Elapsed** — how long the current coding session has been active (see [Session clock](#session-clock) below)
+- **Elapsed + Remote Control** — session duration (fixed-width `XXh XXm`) and Claude Code remote control status (`RC:ON` / `RC:OFF`)
 - **Git** — current branch, modified file count, ahead/behind remote
 
 ## Views
@@ -23,14 +23,14 @@ A lightweight Claude Code status line plugin that displays rate limits, context 
 🔮 Opus     [▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱]  28%  ↻ 3d 4h (Wed 18:00)
 ✨ Sonnet   [▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱]  12%  ↻ 3d 4h (Wed 18:00)
 💰 Overage  [▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱]  $15.82 / $50.00
-🕑 Elapsed  1h 23m
+🕑 Elapsed  01h 23m  📡 RC:ON
 🔀 Git      feat/context  2↑ 3✎
 ```
 
 ### Compact view (single line)
 
 ```
-📐 ▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱ 42% │ ⚡ ▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱ 42% 2h15m │ 📅 ... │ 🕑 1h23m │ 🔀 feat/context 2↑ 3✎
+📐 ▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱ 42% │ ⚡ ▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱ 42% 2h15m │ 📅 ... │ 🕑 01h 23m │ 🔀 feat/context 2↑ 3✎
 ```
 
 ### Color coding
@@ -95,11 +95,20 @@ The status line will appear after the next assistant message.
 
 The elapsed timer tracks how long you've been working in Claude Code. No API call — purely local.
 
+- Uses fixed-width format `XXh XXm` (e.g., `00h 05m`, `01h 23m`, `03h 45m`) for consistent positioning
 - The **first time** the status line runs in a session, it records the current time to `~/.claude/claude-reset-session.json`
-- On **every subsequent refresh**, it calculates the difference and displays it (e.g., `23m`, `1h 15m`, `3h 45m`)
-- If the last recorded start time is **older than 24 hours**, the clock treats it as a stale session and **automatically resets** — it writes a new start time and the timer restarts from `< 1m`
+- On **every subsequent refresh**, it calculates the difference and displays it
+- If the last recorded start time is **older than 24 hours**, the clock treats it as a stale session and **automatically resets** — it writes a new start time and the timer restarts from `00h 00m`
 - The clock **persists across conversation restarts** within the same day. If you close Claude Code and reopen it a few hours later, the timer continues from where it was (since the start time is on disk)
 - To **manually reset** the clock, delete the file: `rm ~/.claude/claude-reset-session.json`
+
+### Remote control status
+
+Detects whether Claude Code's remote control feature is active. Shown on the same line as elapsed time.
+
+- `📡 RC:ON` (green) — a `claude remote-control` process is running
+- `📡 RC:OFF` (dim) — no remote control process detected
+- Detection uses `pgrep` — no API call, purely local
 
 ### Git status
 
